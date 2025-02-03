@@ -1,0 +1,7 @@
+{
+  "name": "service2",
+  "scripts": {
+    "build": "go build -o bin/main .",
+    "dev": "go run main.go"
+  }
+}

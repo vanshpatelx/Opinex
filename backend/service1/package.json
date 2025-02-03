@@ -1,0 +1,27 @@
+{
+  "name": "service1",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsup",
+    "dev": "node dist/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "tsup": "^8.3.5"
+  },
+  "dependencies": {
+    "@types/amqplib": "^0.10.6",
+    "@types/express": "^5.0.0",
+    "@types/pg": "^8.11.10",
+    "amqplib": "^0.10.5",
+    "express": "^4.21.1",
+    "pg": "^8.13.1",
+    "redis": "^4.7.0",
+    "supertest": "^7.0.0"
+  }
+}
