@@ -1,8 +1,8 @@
 version: '3.8'
 
 services:
-  service1:
-    image: "${DOCKER_USERNAME}/probo-service1-image:latest"
+  auth:
+    image: "${DOCKER_USERNAME}/opinex-auth-image:latest"
     environment:
       DB_HOST: db
       DB_PORT: 5432
@@ -20,7 +20,7 @@ services:
         condition: service_healthy
 
   service2:
-    image: "${DOCKER_USERNAME}/probo-service2-image:latest"
+    image: "${DOCKER_USERNAME}/opinex-service2-image:latest"
     environment:
       DB_HOST: db
       DB_PORT: 5432

@@ -1,5 +1,9 @@
-POSTGRES_CONTAINER="postgres_container"
-REDIS_CONTAINER="redis_container"
+#!/bin/bash
+#########################################################################################
+#   Cleaup of all resources used for dev purpose                                        #
+#########################################################################################
+
+source ./../variables.txt
 
 # Stop and remove the PostgreSQL container
 if [ "$(docker ps -q -f name=$POSTGRES_CONTAINER)" ]; then

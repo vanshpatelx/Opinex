@@ -1,4 +1,8 @@
 #!/bin/bash
+#########################################################################################
+#   copy variables from variable.txt, make new env for each services                    #
+#   also run local conatiners for dev pupose                                            #
+#########################################################################################
 
 source ./../variables.txt
 
@@ -56,11 +60,11 @@ create_env_file() {
 }
 
 # Define the .env content for Service 1 and Service 2 using variables from variables.txt
-ENV_CONTENT1="DB_HOST=\"$SERVICE1_DB_HOST\"\nDB_PORT=\"$SERVICE1_DB_PORT\"\nDB_USER=\"$SERVICE1_DB_USER\"\nDB_PASSWORD=\"$SERVICE1_DB_PASSWORD\"\nDB_NAME=\"$SERVICE1_DB_NAME\"\nREDIS_HOST=\"$SERVICE1_REDIS_HOST\"\nREDIS_PORT=\"$SERVICE1_REDIS_PORT\"\nPORT=\"$SERVICE1_PORT\""
+ENV_CONTENT1="AUTH_DB_HOST=\"$AUTH_DB_HOST\"\nAUTH_DB_PORT=\"$AUTH_DB_PORT\"\nAUTH_DB_USER=\"$AUTH_DB_USER\"\nAUTH_DB_PASSWORD=\"$AUTH_DB_PASSWORD\"\nAUTH_DB_NAME=\"$AUTH_DB_NAME\"\nAUTH_REDIS_HOST=\"$AUTH_REDIS_HOST\"\nAUTH_REDIS_PORT=\"$AUTH_REDIS_PORT\"\nAUTH_PORT=\"$AUTH_PORT\""
 ENV_CONTENT2="DB_HOST=\"$SERVICE2_DB_HOST\"\nDB_PORT=\"$SERVICE2_DB_PORT\"\nDB_USER=\"$SERVICE2_DB_USER\"\nDB_PASSWORD=\"$SERVICE2_DB_PASSWORD\"\nDB_NAME=\"$SERVICE2_DB_NAME\"\nREDIS_HOST=\"$SERVICE2_REDIS_HOST\"\nREDIS_PORT=\"$SERVICE2_REDIS_PORT\"\nPORT=\"$SERVICE2_PORT\""
 
 # Define the target locations (relative to the project root)
-TARGET1="backend/service1/.env"
+TARGET1="backend/auth/.env"
 TARGET2="backend/service2/.env"
 
 # Create .env files at both locations with their respective content
