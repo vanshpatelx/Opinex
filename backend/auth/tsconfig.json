@@ -5,6 +5,12 @@
     "baseUrl": "./",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "ES5"
+    "target": "ES2022",
+    "moduleResolution": "node",
+    "module": "CommonJS",    
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   }
 }
