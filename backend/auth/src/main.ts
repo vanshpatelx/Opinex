@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import './otel.tracing';
+import './tracer-init';
 
 async function bootstrap() {
   printEnvVariables();
   const app = await NestFactory.create(AppModule);
-  const port = Number(process.env.AUTH_PORT);
+  const port = Number(process.env.PORT);
   await app.listen(port);
   console.log(`🚀 NestJS: Auth server is running on ${port}`);
 }

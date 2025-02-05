@@ -10,14 +10,11 @@ export class RequestLoggerMiddleware implements NestMiddleware {
 
   use(req: Request, res: Response, next: NextFunction) {
     const startTime = Date.now();
-
     res.on('finish', () => {
       const duration = Date.now() - startTime;
       this.metricsService.recordRequest(req.method, req.url, res.statusCode.toString(), duration);
-
       this.logger.log(`${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
     });
-
     next();
   }
 }

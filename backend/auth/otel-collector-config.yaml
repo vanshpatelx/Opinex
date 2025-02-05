@@ -1,22 +1,21 @@
 receivers:
   otlp:
     protocols:
-      grpc:
       http:
+        endpoint: "0.0.0.0:4318"
+      grpc:
+        endpoint: "0.0.0.0:4317"
+
+processors:
+  batch:
 
 exporters:
-  jaeger:
-    endpoint: "http://localhost:14250"
   prometheus:
-    endpoint: "0.0.0.0:9090"
-  elasticsearch:
-    endpoint: "http://elasticsearch:9200"
+    endpoint: "0.0.0.0:8889"
 
 service:
   pipelines:
     metrics:
       receivers: [otlp]
+      processors: [batch]
       exporters: [prometheus]
-    logs:
-      receivers: [otlp]
-      exporters: [elasticsearch]
