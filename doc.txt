@@ -16,10 +16,10 @@ Register
 ✅ ID Gen
 ✅ Add in Cache
 ✅ Send to pubsub
-generate token
+✅ generate token
 
 login logic
-Zod validations
-Check in cache user is Registered and password check if exist and generate token
-Check in DB user is Registered and password check if exist and generate token
-generate token
+✅ Zod validations
+✅ Check in cache user is Registered and password check if exist and generate token
+✅ Check in DB user is Registered and password check if exist and generate token
+✅ generate token
