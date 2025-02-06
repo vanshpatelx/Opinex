@@ -7,33 +7,56 @@
 source ./../variables.txt
 
 # Check if PostgreSQL container is already running
-if [ "$(docker ps -q -f name=$POSTGRES_CONTAINER)" ]; then
+if [ "$(docker ps -q -f name=$AUTH_POSTGRES_CONTAINER)" ]; then
     echo "PostgreSQL container is already running."
+    echo "Stopping and removing existing PostgreSQL container..."
+    docker stop $AUTH_POSTGRES_CONTAINER
+    docker rm $AUTH_POSTGRES_CONTAINER
+    echo "Starting new PostgreSQL container..."
+    docker run -d --name $AUTH_POSTGRES_CONTAINER \
+        -e POSTGRES_USER=$AUTH_DB_USER \
+        -e POSTGRES_PASSWORD=$AUTH_DB_PASSWORD \
+        -e POSTGRES_DB=$AUTH_DB_NAME \
+        -p $AUTH_DB_PORT:5432 \
+        -v pg_data:/var/lib/postgresql/data \
+        --restart unless-stopped \
+        $POSTGRES_IMAGE
 else
-    echo "Starting PostgreSQL container..."
-    docker run -d --name $POSTGRES_CONTAINER \
-        -e POSTGRES_USER=$POSTGRES_USER \
-        -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD \
-        -e POSTGRES_DB=$POSTGRES_DB \
-        -p $POSTGRES_PORT:5432 \
+    echo "Starting new PostgreSQL container..."
+    docker run -d --name $AUTH_POSTGRES_CONTAINER \
+        -e POSTGRES_USER=$AUTH_DB_USER \
+        -e POSTGRES_PASSWORD=$AUTH_DB_PASSWORD \
+        -e POSTGRES_DB=$AUTH_DB_NAME \
+        -p $AUTH_DB_PORT:5432 \
         -v pg_data:/var/lib/postgresql/data \
         --restart unless-stopped \
         $POSTGRES_IMAGE
 fi
 
-# Check if Redis container is already running
-if [ "$(docker ps -q -f name=$REDIS_CONTAINER)" ]; then
-    echo "Redis container is already running."
+# Check if Redis container is already running (for Cache)
+if [ "$(docker ps -q -f name=$AUTH_REDIS_CONTAINER)" ]; then
+    echo "Redis container (Cache) is already running."
+    echo "Stopping and removing existing Redis container..."
+    docker stop $AUTH_REDIS_CONTAINER
+    docker rm $AUTH_REDIS_CONTAINER
+    echo "Starting new Redis container (Cache)..."
+    docker run -d --name $AUTH_REDIS_CONTAINER \
+        -p $AUTH_REDIS_PORT:6379 \
+        -e REDIS_PASSWORD=$AUTH_REDIS_PASSWORD \
+        -v redis_data:/data \
+        --restart unless-stopped \
+        $REDIS_IMAGE
 else
-    echo "Starting Redis container..."
-    docker run -d --name $REDIS_CONTAINER \
-        -p $REDIS_PORT:6379 \
+    echo "Starting Redis container (Cache)..."
+    docker run -d --name $AUTH_REDIS_CONTAINER \
+        -p $AUTH_REDIS_PORT:6379 \
+        -e REDIS_PASSWORD=$AUTH_REDIS_PASSWORD \
         -v redis_data:/data \
         --restart unless-stopped \
         $REDIS_IMAGE
 fi
 
-echo "PostgreSQL and Redis are running."
+echo "PostgreSQL and Redis (Cache) are running."
 
 # Function to create .env file in a location
 create_env_file() {
@@ -60,7 +83,7 @@ create_env_file() {
 }
 
 # Define the .env content for Service 1 and Service 2 using variables from variables.txt
-ENV_CONTENT1="AUTH_DB_HOST=\"$AUTH_DB_HOST\"\nAUTH_DB_PORT=\"$AUTH_DB_PORT\"\nAUTH_DB_USER=\"$AUTH_DB_USER\"\nAUTH_DB_PASSWORD=\"$AUTH_DB_PASSWORD\"\nAUTH_DB_NAME=\"$AUTH_DB_NAME\"\nAUTH_REDIS_HOST=\"$AUTH_REDIS_HOST\"\nAUTH_REDIS_PORT=\"$AUTH_REDIS_PORT\"\nAUTH_PORT=\"$AUTH_PORT\""
+ENV_CONTENT1="DB_HOST=\"$AUTH_DB_HOST\"\nDB_PORT=\"$AUTH_DB_PORT\"\nDB_USER=\"$AUTH_DB_USER\"\nDB_PASSWORD=\"$AUTH_DB_PASSWORD\"\nDB_NAME=\"$AUTH_DB_NAME\"\nREDIS_HOST=\"$AUTH_REDIS_HOST\"\nREDIS_PORT=\"$AUTH_REDIS_PORT\"\nAUTH_PORT=\"$AUTH_PORT\"\nREDIS_PASSWORD=\"$AUTH_REDIS_PASSWORD\"\nJWT_SECRET=\"$JWT_SECRET\""
 ENV_CONTENT2="DB_HOST=\"$SERVICE2_DB_HOST\"\nDB_PORT=\"$SERVICE2_DB_PORT\"\nDB_USER=\"$SERVICE2_DB_USER\"\nDB_PASSWORD=\"$SERVICE2_DB_PASSWORD\"\nDB_NAME=\"$SERVICE2_DB_NAME\"\nREDIS_HOST=\"$SERVICE2_REDIS_HOST\"\nREDIS_PORT=\"$SERVICE2_REDIS_PORT\"\nPORT=\"$SERVICE2_PORT\""
 
 # Define the target locations (relative to the project root)
