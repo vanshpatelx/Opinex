@@ -3,11 +3,9 @@ import bcrypt from "bcrypt";
 import { z } from 'zod';
 import { redisClient } from "../config/Cache/RedisClient";
 import { logger } from "../utils/logger";
-import pool from "../config/DB/db";
+import { postgresClient } from "../config/DB/db";
 import { generateUniqueId } from "../utils/id";
 import { generateToken } from "../utils/jwt";
-
-const users: { email: string; password: string }[] = [];
 
 // Define a schema
 const userSchema = z.object({
@@ -43,7 +41,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
             return;
         }
 
-        const client = await pool.connect();
+        const client = await postgresClient.connect();
         const result = await client.query("SELECT * FROM users WHERE email = $1", [email]);
         client.release();
 
@@ -70,7 +68,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const userData = { id: userId, email, password: hashedPassword };
+        const userData = { id: userId.toString(), email, password: hashedPassword };
         await redisClient.set(cacheKey, JSON.stringify(userData), "EX", 86400);
         logger.info({ message: "Auth Register: User cached", email, userId });
 
@@ -78,7 +76,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         logger.info({ message: "Auth Register: send to pubsub for register", email, userId });
 
         // Generate JWT token
-        const token = generateToken({ id: userId, email });
+        const token = generateToken({ id: userId.toString(), email });
         logger.info({ message: "Auth Register: Token generated", email, userId });
 
         res.status(201).json({ message: "User registered successfully", token });
@@ -135,7 +133,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
             userId = Number(user.id);
         }
 
-        const client = await pool.connect();
+        const client = await postgresClient.connect();
         const result = await client.query("SELECT * FROM users WHERE email = $1", [email]);
         client.release();
 
@@ -166,7 +164,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         logger.info({ message: "Auth: Login approved", email, userId });
 
         // Generate JWT token
-        const token = generateToken({ id: userId, email });
+        const token = generateToken({ id: userId.toString(), email });
         logger.info({ message: "Auth Login: Token generated", email, userId });
 
         res.status(201).json({ message: "User login successfully", token });

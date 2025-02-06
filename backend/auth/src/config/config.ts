@@ -1,36 +1,57 @@
-// storing varibles centrally
+// storing variables centrally
+import dotenv from "dotenv";
+
+dotenv.config();
+
 export const config = {
-    redis : {
-        host : process.env.REDIS_HOST,
+    redis: {
+        host: process.env.REDIS_HOST,
         port: Number(process.env.REDIS_PORT),
-        password: process.env.REDIS_PASSWORD,
-        db: Number(process.env.REDIS_DB),
+        password: process.env.REDIS_PASSWORD
     },
-    JWT_SECRET :{
-        secret: process.env.JWT_SECRET
+    JWT_SECRET: {
+        secret: String(process.env.JWT_SECRET)
     },
-    rabbitmq: {
-        url: process.env.RABBITMQ_URL, 
-        signupQueue: process.env.signupQueue,
-        addElementQueue: process.env.addElementQueue,
-        updateElementQueue: process.env.updateElementQueue,
-        addAvatarQueue: process.env.addAvatarQueue,
-        addMapQueue: process.env.addMapQueue
-    },
-    db : {
-        user : process.env.user,
-        host : process.env.host,
-        database : process.env.database,
-        password : process.env.password,
+    db: {
+        user: process.env.DB_USER,
+        host: process.env.DB_HOST,
+        database: process.env.DB_NAME,
+        password: process.env.DB_PASSWORD,
         port: Number(process.env.DB_PORT)
     },
-    DB2 : {
-        host : process.env.host,
-        localDataCenter : process.env.localDataCenter,
-    },
-    AWS_S3:{
-        accessKeyId: process.env.accessKeyId,
-        secretAccessKey: process.env.secretAccessKey,
-        region: process.env.region
-    }
+    port: Number(process.env.AUTH_PORT),
+
 };
+
+export const loadEnv = () => {
+    console.log("==================================");
+    console.log("🚀 Application Environment Variables");
+    console.log("==================================\n");
+
+    console.log("🔹 REDIS CONFIGURATION:");
+    console.log("   ➤ REDIS_HOST      :", process.env.REDIS_HOST);
+    console.log("   ➤ REDIS_PORT      :", process.env.REDIS_PORT);
+    console.log("   ➤ REDIS_PASSWORD  :", process.env.REDIS_PASSWORD);
+    console.log("\n");
+
+    console.log("🔹 JWT CONFIGURATION:");
+    console.log("   ➤ JWT_SECRET      :", process.env.JWT_SECRET);
+    console.log("\n");
+
+    console.log("🔹 DATABASE CONFIGURATION:");
+    console.log("   ➤ DB_USER         :", process.env.DB_USER);
+    console.log("   ➤ DB_HOST         :", process.env.DB_HOST);
+    console.log("   ➤ DB_NAME         :", process.env.DB_NAME);
+    console.log("   ➤ DB_PASSWORD     :", process.env.DB_PASSWORD);
+    console.log("   ➤ DB_PORT         :", process.env.DB_PORT);
+    console.log("\n");
+
+    console.log("🔹 SERVER PORT:");
+    console.log("   ➤ AUTH_PORT         :", process.env.AUTH_PORT);
+    console.log("\n");
+
+    console.log("==================================");
+    console.log("✅ Environment variables loaded!");
+    console.log("==================================");
+
+}

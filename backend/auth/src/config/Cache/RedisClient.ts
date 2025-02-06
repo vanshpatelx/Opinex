@@ -13,7 +13,6 @@ class RedisClient {
                 host: config.redis.host,
                 port: config.redis.port,
                 password: config.redis.password,
-                db: config.redis.db,
             });
 
             RedisClient.instance.on("connect", () => {

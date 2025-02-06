@@ -1,6 +1,7 @@
 import jwt, { Secret, SignOptions } from "jsonwebtoken";
+import { config } from "../config/config";
 
-const JWT_SECRET: Secret = process.env.JWT_SECRET || "your_secret_key";
+const JWT_SECRET: Secret = config.JWT_SECRET.secret;
 
 /**
  * Generates a JWT token for a user
