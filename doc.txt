@@ -1,0 +1,25 @@
+Auth Server - Responsible for creating tokens
+- We can decode token to any service
+- As cache we use redis cache users details like
+email, Id and password only.
+- we have to send to pub-sub when needed
+
+endpoints
+: login
+: signup
+
+
+Register
+✅ Zod validations
+✅ Check in cache user is Registered
+✅ Check in DB
+✅ ID Gen
+✅ Add in Cache
+✅ Send to pubsub
+generate token
+
+login logic
+Zod validations
+Check in cache user is Registered and password check if exist and generate token
+Check in DB user is Registered and password check if exist and generate token
+generate token

@@ -1,16 +1,9 @@
 {
-  "extends": "tsconfig/nestjs.json",
+  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "target": "ES2022",
-    "moduleResolution": "node",
-    "module": "CommonJS",    
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
-  }
+    "lib": ["ES2015"],
+    "outDir": "./dist"
+  },
+  "exclude": ["node_modules"],
+  "include": ["."]
 }

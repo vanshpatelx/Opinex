@@ -1,5 +1,5 @@
 {
-  "name": "theProbo",
+  "name": "Opinex",
   "private": true,
   "scripts": {
     "build": "turbo build",
@@ -17,7 +17,6 @@
   },
   "packageManager": "npm@11.0.0",
   "workspaces": [
-    "apps/*",
     "packages/*",
     "backend/*"
   ]
