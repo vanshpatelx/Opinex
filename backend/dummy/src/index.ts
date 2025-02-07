@@ -11,13 +11,13 @@ const port = config.port;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use("/auth", authRoutes);
+app.use("/dummy", authRoutes);
 
-app.get("/auth", (req: Request, res: Response) => {
+app.get("/dummy", (req: Request, res: Response) => {
     res.send("Dummy Server");
 });
 
-app.get('/auth/health', (req: Request, res: Response) => {
+app.get('/dummy/health', (req: Request, res: Response) => {
   res.status(200).json({ success: true, message: "server is running." });
 });
 
