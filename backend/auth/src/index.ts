@@ -13,8 +13,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/auth", authRoutes);
 
-app.get("/", (req: Request, res: Response) => {
+app.get("/auth", (req: Request, res: Response) => {
     res.send("Express + TypeScript Server");
+});
+
+app.get('/auth/health', (req: Request, res: Response) => {
+  res.status(200).json({ success: true, message: "server is running." });
 });
 
 async function startServer() {

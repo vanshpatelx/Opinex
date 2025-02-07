@@ -8,6 +8,7 @@ endpoints
 : login
 : signup
 
+docker compose -f 'docker/auth/docker-compose.yaml' up -d --build 
 
 Register
 ✅ Zod validations

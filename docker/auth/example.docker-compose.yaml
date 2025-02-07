@@ -1,6 +1,33 @@
 version: '3.8'
 
+networks:
+  auth_network:  # Define a custom bridge network
+    driver: bridge
+
 services:
+  app:
+    container_name: AuthService
+    image: ${IMAGE}  # Use a pre-built image
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      DB_HOST: "postgres"
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      REDIS_HOST: "redis"
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      PORT: ${PORT}
+    ports:
+      - "${PORT}:${PORT}"
+    networks:
+      - auth_network
+
   postgres:
     container_name: ${POSTGRES_CONTAINER}
     image: ${POSTGRES_IMAGE}
@@ -13,17 +40,20 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+    networks:
+      - auth_network
 
   redis:
     container_name: ${REDIS_CONTAINER}
     image: ${REDIS_IMAGE}
     restart: unless-stopped
-    environment:
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: ["redis-server", "--requirepass", ${REDIS_PASSWORD}]
     ports:
       - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - auth_network
 
 volumes:
   pg_data:
