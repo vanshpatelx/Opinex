@@ -8,7 +8,14 @@ endpoints
 : login
 : signup
 
+docker-Compose command when to start it
 docker compose -f 'docker/auth/docker-compose.yaml' up -d --build 
+docker compose -f 'docker/auth/docker-compose.resources.yaml' up -d --build 
+
+// restart
+docker compose -f 'docker/auth/docker-compose.yaml' down -v && docker compose -f 'docker/auth/docker-compose.yaml' up -d --build
+docker compose -f 'docker/auth/docker-compose.resources.yaml' down -v && docker compose -f 'docker/auth/docker-compose.resources.yaml' up -d --build
+
 
 Register
 ✅ Zod validations
@@ -58,3 +65,5 @@ docker compose -f docker-compose.resources.yaml down
 ~ ❯ curl -X POST http://localhost:5001/auth/login \                                                                                                      Py base Node system 06:31:17 PM
      -H "Content-Type: application/json" \
      -d '{"email": "test@example.com", "password": "password123"}'
+
+

@@ -23,19 +23,19 @@ COPY --from=build-stage /app /app
 COPY --from=build-stage /app/backend/auth/dist /app/backend/auth/dist
 
 
-# Set environment variables properly
-ENV POSTGRES_IMAGE="postgres:latest" \
-    REDIS_IMAGE="redis:latest" \
-    JWT_SECRET="helloworld" \
-    DB_HOST="localhost" \
-    DB_PORT=5432 \
-    DB_USER="admin" \
-    DB_PASSWORD="password" \
-    DB_NAME="mydatabase" \
-    REDIS_HOST="localhost" \
-    REDIS_PORT=6379 \
-    REDIS_PASSWORD="password" \
-    PORT=5001
+# # Set environment variables properly
+# ENV POSTGRES_IMAGE="postgres:latest" \
+#     REDIS_IMAGE="redis:latest" \
+#     JWT_SECRET="helloworld" \
+#     DB_HOST="localhost" \
+#     DB_PORT=5432 \
+#     DB_USER="admin" \
+#     DB_PASSWORD="password" \
+#     DB_NAME="mydatabase" \
+#     REDIS_HOST="localhost" \
+#     REDIS_PORT=6379 \
+#     REDIS_PASSWORD="password" \
+#     PORT=5001
 
 EXPOSE 5001
 

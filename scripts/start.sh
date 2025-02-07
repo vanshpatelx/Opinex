@@ -1,6 +1,10 @@
 #!/bin/bash
 
-# Define colors
+# ============================================================
+# 🌟 Backend Environment (Variables) Setup Script
+# ============================================================
+
+# 🎨 Define Colors for UI Formatting
 GREEN=$(printf "\e[32m")
 YELLOW=$(printf "\e[33m")
 RED=$(printf "\e[31m")
@@ -9,12 +13,17 @@ CYAN=$(printf "\e[36m")
 BOLD=$(printf "\e[1m")
 RESET=$(printf "\e[0m")
 
-# Icons
+# 🔹 Icons for better visualization
 CHECK="✔️"
 WARNING="⚠️"
 ERROR="❌"
+INFO="🔍"
+RESETTING="📋"
+CLEARING="🗑️"
 
-# Paths
+# ============================================================
+# 📂 Define Paths
+# ============================================================
 VARIABLES_FILE="../variables.txt"
 BACKEND_DIR="../backend"
 DOCKER_DIR="../docker"
@@ -24,7 +33,10 @@ DOCKER_COMPOSE_FILES=(
     "docker-compose.resources.yaml"
 )
 
-printf "${BOLD}${CYAN}🔍 Detecting services...${RESET}\n"
+# ============================================================
+# 📌 Detect Backend Services
+# ============================================================
+printf "\n${CYAN}${INFO} Detecting services in ${BACKEND_DIR}...${RESET}\n"
 SERVICES=($(ls -d ${BACKEND_DIR}/*/ 2>/dev/null | xargs -n 1 basename))
 
 if [[ ${#SERVICES[@]} -eq 0 ]]; then
@@ -32,67 +44,71 @@ if [[ ${#SERVICES[@]} -eq 0 ]]; then
     exit 1
 fi
 
-printf "${GREEN}${CHECK} Found ${#SERVICES[@]} services.${RESET}\n"
+printf "${GREEN}${CHECK} Found ${#SERVICES[@]} services:${RESET}\n"
+for SERVICE in "${SERVICES[@]}"; do
+    printf "   - ${BOLD}$SERVICE${RESET}\n"
+done
+printf "\n"
 
+# ============================================================
+# 🔄 Processing Services
+# ============================================================
 for SERVICE in "${SERVICES[@]}"; do
     ENV_FILE="${BACKEND_DIR}/${SERVICE}/.env"
     SERVICE_UPPER=$(echo "$SERVICE" | tr '[:lower:]' '[:upper:]')
 
-    # Check if variables exist for this service
+    # 🚧 Check if variables exist for this service
     if ! grep -q "^${SERVICE_UPPER}_" "$VARIABLES_FILE"; then
-        printf "${YELLOW}${WARNING} Skipping ${SERVICE}, no matching variables found.${RESET}\n"
+        printf "${YELLOW}${WARNING} Skipping ${BOLD}$SERVICE${RESET}, no matching variables found in ${VARIABLES_FILE}.${RESET}\n"
         continue
     fi
 
-    # Clear .env file before writing
-    printf "${BLUE}🗑️  Clearing $ENV_FILE...${RESET}\n"
+    # 🔄 Reset .env file
+    printf "${BLUE}${CLEARING} Clearing ${ENV_FILE}...${RESET}\n"
     > "$ENV_FILE"
 
-    printf "${GREEN}${CHECK} Generating $ENV_FILE...${RESET}\n"
+    printf "${GREEN}${CHECK} Generating ${ENV_FILE} from ${VARIABLES_FILE}...${RESET}\n"
     while IFS='=' read -r key value; do
-        if [[ -n "$key" && "$key" != "#"* ]]; then
-            if [[ "$key" == ${SERVICE_UPPER}_* ]]; then
-                new_key=${key#${SERVICE_UPPER}_}
-                echo "${new_key}=${value}" >> "$ENV_FILE"
-            fi
+        if [[ -n "$key" && "$key" != "#"* && "$key" == "${SERVICE_UPPER}_"* ]]; then
+            new_key=${key#${SERVICE_UPPER}_}
+            echo "${new_key}=${value}" >> "$ENV_FILE"
         fi
     done < "$VARIABLES_FILE"
 
-    # Docker Compose Files
+    # ============================================================
+    # 🔄 Reset and Update Docker Compose Files
+    # ============================================================
     for COMPOSE_FILE in "${DOCKER_COMPOSE_FILES[@]}"; do
         EXAMPLE_FILE="${DOCKER_DIR}/${SERVICE}/example.${COMPOSE_FILE}"
         TARGET_FILE="${DOCKER_DIR}/${SERVICE}/${COMPOSE_FILE}"
 
         if [[ -f "$EXAMPLE_FILE" ]]; then
-            printf "${BLUE}📋 Resetting $TARGET_FILE from $EXAMPLE_FILE...${RESET}\n"
+            printf "${BLUE}${RESETTING} Resetting ${TARGET_FILE} from ${EXAMPLE_FILE}...${RESET}\n"
             cp "$EXAMPLE_FILE" "$TARGET_FILE"
         else
             printf "${YELLOW}${WARNING} No example file found for ${COMPOSE_FILE}, skipping reset.${RESET}\n"
             continue
         fi
 
-        if [[ ! -f "$VARIABLES_FILE" ]]; then
-            printf "${YELLOW}${WARNING} Variables file not found! Skipping variable replacement.${RESET}\n"
-            continue
-        fi
-
+        # 🔄 Replace Variables in Docker Compose File
         while IFS='=' read -r key value; do
-            if [[ -n "$key" && "$key" != "#"* ]]; then
-                if [[ "$key" == ${SERVICE_UPPER}_* ]]; then
-                    var_name=${key#${SERVICE_UPPER}_}  
-                    key_placeholder="\${$var_name}"  
+            if [[ -n "$key" && "$key" != "#"* && "$key" == "${SERVICE_UPPER}_"* ]]; then
+                var_name=${key#${SERVICE_UPPER}_}  
+                key_placeholder="\${$var_name}"  
 
-                    if [[ "$OSTYPE" == "darwin"* ]]; then
-                        sed -i "" "s#${key_placeholder}#${value}#g" "$TARGET_FILE"
-                    else
-                        sed -i "s#${key_placeholder}#${value}#g" "$TARGET_FILE"
-                    fi
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                    sed -i "" "s#${key_placeholder}#${value}#g" "$TARGET_FILE"
+                else
+                    sed -i "s#${key_placeholder}#${value}#g" "$TARGET_FILE"
                 fi
             fi
         done < "$VARIABLES_FILE"
 
-        printf "${GREEN}${CHECK} Updated $TARGET_FILE.${RESET}\n"
+        printf "${GREEN}${CHECK} Updated ${TARGET_FILE} with environment variables.${RESET}\n"
     done
 done
 
-printf "${GREEN}${CHECK} Done!${RESET}\n"
+# ============================================================
+# 🎉 Final Success Message
+# ============================================================
+printf "\n${GREEN}${CHECK} Done! Environment files and Docker configurations are set up.${RESET}\n"

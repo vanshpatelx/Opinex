@@ -13,6 +13,8 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
 
   redis:
     container_name: ${REDIS_CONTAINER}

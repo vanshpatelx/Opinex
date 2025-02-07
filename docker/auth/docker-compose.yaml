@@ -1,13 +1,13 @@
 version: '3.8'
 
 networks:
-  auth_network:  # Define a custom bridge network
+  auth_network:
     driver: bridge
 
 services:
   app:
     container_name: AuthService
-    image: "auth-service:latest"  # Use a pre-built image
+    image: "auth-service:latest"
     restart: unless-stopped
     depends_on:
       - postgres
@@ -40,6 +40,8 @@ services:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
     networks:
       - auth_network
 
