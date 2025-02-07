@@ -68,37 +68,3 @@
 # volumes:
 #   db_data:
 #   redis_data:
-
-
-version: '3.8'
-services:
-  db:
-    image: postgres:latest
-    restart: always
-    environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydatabase
-    ports:
-      - "5432:5432"
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:latest
-    restart: always
-    command: >
-      redis-server --requirepass password --port 6379 
-      --save 60 1 --appendonly yes
-    environment:
-      REDIS_PASSWORD: password
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data  # Persistent storage for Redis
-
-volumes:
-  pg_data:
-    name: postgres_data
-  redis_data:
-    name: redis_storage

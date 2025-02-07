@@ -20,16 +20,25 @@ WORKDIR /app
 # Copy the necessary files from the build stage
 COPY --from=build-stage /app /app
 
-COPY --from=build-stage /app/backend/service1/dist /app/backend/service1/dist
+COPY --from=build-stage /app/backend/auth/dist /app/backend/auth/dist
 
-ENV DB_HOST=db
-ENV DB_PORT=5432
-ENV DB_USER=user
-ENV DB_PASSWORD=password
-ENV DB_NAME=mydatabase
-ENV REDIS_HOST=redis
-ENV REDIS_PORT=6379
 
-EXPOSE 3000
+# Set environment variables properly
+ENV POSTGRES_IMAGE="postgres:latest" \
+    REDIS_IMAGE="redis:latest" \
+    JWT_SECRET="helloworld" \
+    POSTGRES_CONTAINER="auth_postgres_container" \
+    DB_HOST="localhost" \
+    DB_PORT=5432 \
+    DB_USER="admin" \
+    DB_PASSWORD="password" \
+    DB_NAME="mydatabase" \
+    REDIS_CONTAINER="auth_redis_container" \
+    REDIS_HOST="localhost" \
+    REDIS_PORT=6379 \
+    REDIS_PASSWORD="password" \
+    PORT=5001
 
-CMD ["node", "backend/service1/dist/index.js"]
+EXPOSE 5001
+
+CMD ["node", "backend/auth/dist/index.js"]

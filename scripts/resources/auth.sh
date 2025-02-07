@@ -4,7 +4,7 @@
 #   also run local conatiners for dev pupose                                            #
 #########################################################################################
 
-source ./../variables.txt
+source ./../../variables.txt
 
 # Check if PostgreSQL container is already running
 if [ "$(docker ps -q -f name=$AUTH_POSTGRES_CONTAINER)" ]; then

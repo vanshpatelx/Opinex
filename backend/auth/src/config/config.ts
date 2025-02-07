@@ -19,7 +19,7 @@ export const config = {
         password: process.env.DB_PASSWORD,
         port: Number(process.env.DB_PORT)
     },
-    port: Number(process.env.AUTH_PORT),
+    port: Number(process.env.PORT),
 
 };
 
@@ -47,7 +47,7 @@ export const loadEnv = () => {
     console.log("\n");
 
     console.log("🔹 SERVER PORT:");
-    console.log("   ➤ AUTH_PORT         :", process.env.AUTH_PORT);
+    console.log("   ➤ AUTH_PORT         :", process.env.PORT);
     console.log("\n");
 
     console.log("==================================");
