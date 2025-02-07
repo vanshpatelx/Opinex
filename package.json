@@ -1,5 +1,5 @@
 {
-  "name": "Opinex",
+  "name": "opinex",
   "private": true,
   "scripts": {
     "build": "turbo build",
