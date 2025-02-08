@@ -53,3 +53,4 @@ for SERVICE in "$@"; do
         echo -e "${RED}Image $OLD_IMAGE not found, skipping...${NC}"
     fi
 done
+
