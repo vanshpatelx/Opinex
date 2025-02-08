@@ -1,5 +1,7 @@
 #!/bin/bash
 
+PROJECT_NAME=opinex
+
 # Colors for better visibility
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -19,7 +21,7 @@ shift 2  # Remove first two arguments (username and version) from the list
 # Iterate over provided service names
 for SERVICE in "$@"; do
     OLD_IMAGE="${SERVICE}-service"
-    NEW_IMAGE="${USERNAME}/${OLD_IMAGE}:${VERSION}"
+    NEW_IMAGE="${USERNAME}/${PROJECT_NAME}-${OLD_IMAGE}:${VERSION}"
 
     # Check if the image exists
     if docker images | awk '{print $1}' | grep -q "^${OLD_IMAGE}$"; then
