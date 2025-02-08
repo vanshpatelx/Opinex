@@ -19,14 +19,15 @@ jobs:
       - name: Detect changed microservices
         id: filter
         run: |
-          changed_services=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^backend/' | cut -d'/' -f2 | sort -u)
+          changed_services=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^backend/' | cut -d'/' -f2 | sort -u | jq -R . | jq -s .)
+          
           echo "Detected changes in: $changed_services"
 
-          # Ensure JSON format even if empty
-          if [[ -z "$changed_services" ]]; then
+          # Ensure valid JSON
+          if [[ -z "$changed_services" || "$changed_services" == "[]" ]]; then
             services_json="[]"
           else
-            services_json=$(echo "$changed_services" | jq -R -c 'split("\n") | map(select(. != ""))')
+            services_json="$changed_services"
           fi
 
           echo "services=$services_json" >> "$GITHUB_OUTPUT"
