@@ -15,6 +15,7 @@
     "tsup": "^8.3.6"
   },
   "dependencies": {
+    "@repo/tests": "*",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/jsonwebtoken": "^9.0.8",

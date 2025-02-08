@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import axios from 'axios';
 
-const AUTH_URL = "http://localhost:5001/auth";
+const AUTH_URL = "http://localhost:5002/auth";
 
 describe("Auth Service", () => {
     const testUser = {

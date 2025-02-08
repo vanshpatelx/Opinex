@@ -21,7 +21,7 @@ AUTH_PORT=5001
 DUMMY_POSTGRES_IMAGE=postgres:latest
 DUMMY_REDIS_IMAGE=redis:latest
 DUMMY_JWT_SECRET=helloworld
-DUMMY_IMAGE=dummy-service:latest
+DUMMY_IMAGE="dummy-service:latest"
 
 DUMMY_POSTGRES_CONTAINER=dummy_postgres_container
 DUMMY_DB_HOST=localhost
