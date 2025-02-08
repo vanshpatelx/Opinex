@@ -1,3 +1,5 @@
+
+
 #!/bin/bash
 
 # ============================================================
@@ -106,6 +108,56 @@ for SERVICE in "${SERVICES[@]}"; do
 
         printf "${GREEN}${CHECK} Updated ${TARGET_FILE} with environment variables.${RESET}\n"
     done
+done
+
+# ============================================================
+# 🎉 Final Success Message for seprate docker files
+# ============================================================
+printf "\n${GREEN}${CHECK} Done! Environment files and Docker configurations are set up for separate servers.${RESET}\n"
+
+
+DOCKER_COMPOSE_FILES=(
+    "docker-compose.yaml"
+    "docker-compose.resources.yaml"
+)
+
+EXAMPLE_COMPOSE_FILES=(
+    "example.docker-compose.yaml"
+    "example.docker-compose.resources.yaml"
+)
+
+# ============================================================
+# 🔄 Copy and Update Docker Compose Files - Whole system Docker files
+# ============================================================
+printf "\n${CYAN}${INFO} Copying and updating Docker Compose files in ${DOCKER_DIR}...${RESET}\n"
+
+for ((i=0; i<${#EXAMPLE_COMPOSE_FILES[@]}; i++)); do
+    EXAMPLE_FILE="${DOCKER_DIR}/${EXAMPLE_COMPOSE_FILES[$i]}"
+    TARGET_FILE="${DOCKER_DIR}/${DOCKER_COMPOSE_FILES[$i]}"
+
+    if [[ -f "$EXAMPLE_FILE" ]]; then
+        printf "${BLUE}${RESETTING} Copying ${EXAMPLE_FILE} to ${TARGET_FILE}...${RESET}\n"
+        cp "$EXAMPLE_FILE" "$TARGET_FILE"
+    else
+        printf "${YELLOW}${WARNING} No example file found: ${EXAMPLE_FILE}, skipping.${RESET}\n"
+        continue
+    fi
+
+    # 🔄 Replace Variables in Docker Compose File
+    while IFS='=' read -r key value; do
+        if [[ -n "$key" && "$key" != "#"* ]]; then
+            var_name="${key}"  
+            key_placeholder="\${$var_name}"  
+
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i "" "s#${key_placeholder}#${value}#g" "$TARGET_FILE"
+            else
+                sed -i "s#${key_placeholder}#${value}#g" "$TARGET_FILE"
+            fi
+        fi
+    done < "$VARIABLES_FILE"
+
+    printf "${GREEN}${CHECK} Updated ${TARGET_FILE} with environment variables.${RESET}\n"
 done
 
 # ============================================================

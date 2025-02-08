@@ -35,7 +35,7 @@ docker compose -f 'docker/dummy/docker-compose.resources.yaml' up -d --build
 ### Register a New User
 **Request:**
 ```sh
-curl -X POST http://localhost:5001/dummy/register \
+curl -X POST http://localhost:5002/dummy/register \
      -H "Content-Type: application/json" \
      -d '{"email": "test@example.com", "password": "password123"}'
 ```
@@ -63,7 +63,7 @@ const userSchema = z.object({
 ### User Login
 **Request:**
 ```sh
-curl -X POST http://localhost:5001/dummy/login \
+curl -X POST http://localhost:5002/dummy/login \
      -H "Content-Type: application/json" \
      -d '{"email": "test@example.com", "password": "password123"}'
 ```

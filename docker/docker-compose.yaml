@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  auth:
+    container_name: AuthService
+    image: "postgres:latest"
+    environment:
+      DB_HOST: postgres_auth
+      DB_PORT: 5432
+      DB_USER: "admin"
+      DB_PASSWORD: "password"
+      DB_NAME: "mydatabase"
+      REDIS_HOST: redis_auth
+      REDIS_PORT: 6379
+    ports:
+      - "5001:5001"
+    depends_on:
+      postgres_auth:
+      redis_auth:
+        condition: service_healthy
+
+  dummy:
+    container_name: DummyService
+    image: "postgres:latest"
+    environment:
+      DB_HOST: postgres_dummy
+      DB_PORT: 5432
+      DB_USER: "admin"
+      DB_PASSWORD: "password"
+      DB_NAME: "mydatabase"
+      REDIS_HOST: redis_dummy
+      REDIS_PORT: 6379
+    ports:
+      - "5002:5002"
+    depends_on:
+      postgres_dummy:
+      redis_dummy:
+        condition: service_healthy
+
+  postgres_auth:
+    container_name: "auth_postgres_container"
+    image: "postgres:latest"
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "mydatabase"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_auth_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+
+  postgres_dummy:
+    container_name: "dummy_postgres_container"
+    image: "postgres:latest"
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "admin"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "mydatabase"
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_dummy_data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+
+  redis_auth:
+    container_name: "auth_redis_container"
+    image: "redis:latest"
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "password"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_auth_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+
+  redis_dummy:
+    container_name: "dummy_redis_container"
+    image: "redis:latest"
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "password"]
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_dummy_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  pg_auth_data:
+  pg_dummy_data:
+  redis_auth_data:
+  redis_dummy_data:
