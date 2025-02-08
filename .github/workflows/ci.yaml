@@ -19,8 +19,8 @@ jobs:
       - name: Detect changed microservices
         id: filter
         run: |
-          changed_services=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^backend/' | cut -d'/' -f2 | sort -u | jq -R . | jq -s .)
-          
+          changed_services=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^backend/' | cut -d'/' -f2 | sort -u | jq -R . | jq -s -c .)
+
           echo "Detected changes in: $changed_services"
 
           # Ensure valid JSON
