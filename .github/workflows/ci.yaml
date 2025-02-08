@@ -80,7 +80,7 @@ jobs:
       - name: Start Turbo Dev
         run: |
           turbo build
-          nohup turbo dev > turbo.log 2>&1 & echo $! > turbo_dev.pid
+          tmux new-session -d -s turbo_session "turbo dev"
 
       - name: Wait Until All Servers are Up
         run: |
@@ -95,10 +95,7 @@ jobs:
 
       - name: Stop Turbo Dev
         run: |
-          if [ -f turbo_dev.pid ]; then
-            kill $(cat turbo_dev.pid) || echo "Process already stopped"
-            rm turbo_dev.pid
-          fi
+          tmux kill-session -t turbo_session || echo "Turbo session not running"
       
       - name: Wait Until All Servers are Up
         run: |
