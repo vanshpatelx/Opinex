@@ -100,6 +100,12 @@ jobs:
             kill $(cat turbo_dev.pid) || echo "Process already stopped"
             rm turbo_dev.pid
           fi
+      
+      - name: Wait Until All Servers are Up
+        run: |
+          cd scripts/
+          chmod +x checkservice.sh
+          ./checkservice.sh
 
       - name: Cleanup Resources
         run: |
