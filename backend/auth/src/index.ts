@@ -13,6 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/auth", authRoutes);
 
+
 app.get("/auth", (req: Request, res: Response) => {
     res.send("Express + TypeScript Server");
 });
