@@ -139,3 +139,131 @@ update-k8s:
           git commit -m "Update Kubernetes YAML versions for changed services"
           git push origin main
 
+
+
+
+
+
+
+name: CI for Monorepo
+
+on:
+  push:
+    branches:
+      - main
+  
+jobs:
+  environment: opinex
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.filter.outputs.services }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Detect changed microservices
+        id: filter
+        run: |
+          changed_services=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^backend/' | cut -d'/' -f2 | sort -u)
+          echo "Detected changes in: $changed_services"
+          echo "services=$(echo $changed_services | jq -R -c 'split(\" \")')" >> $GITHUB_ENV
+
+      - name: Store services as output
+        run: echo "services=${{ env.services }}" >> $GITHUB_OUTPUT
+
+  build:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    environment: opinex
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js Environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'
+
+      - name: Install Node.js Dependencies
+        run: |
+          npm install -g turbo
+          npm install
+
+      - name: 🌟 Setup Backend Environment (Variables)
+        run: |
+          cd scripts/
+          chmod +x start.sh
+          ./start.sh
+      
+      # Running docker in resources and check logs if fails
+      - name: Configure all Resources in Docker
+        run: |
+          docker compose -f 'docker/docker-compose.resources.yaml' up -d --build --wait
+      - name: Verify Running Containers
+        run: docker compose -f 'docker/docker-compose.resources.yaml' ps
+      - name: Debug Logs on Failure
+        if: failure()
+        run: docker compose -f 'docker/docker-compose.resources.yaml' logs
+            
+      - name: Start Turbo Dev
+        run: |
+          turbo build
+          turbo dev &  # Run in background
+          echo $! > turbo_dev.pid  # Save PID
+
+      - name: 🌟 wait till all servers up
+        run: |
+          cd scripts/
+          chmod +x checkservice.sh
+          ./checkservice.sh
+
+      - name: Run Tests in /packages/test (All test)
+        run: |
+          cd packages/test
+          npm run test
+
+      - name: Stop Turbo Dev
+        run: |
+          if [ -f turbo_dev.pid ]; then
+            kill $(cat turbo_dev.pid) || echo "Process already stopped"
+            rm turbo_dev.pid
+          fi
+
+      - name: Cleanup Resources
+        run: |
+          docker compose -f 'docker/docker-compose.resources.yaml' down -v
+
+      - name: Build Images
+        run: |
+          cd scripts/
+          chmod +x build_images.sh
+          ./build_images.sh
+
+      # Running all in docker
+      - name: Configure all images + resources in Docker
+        run: |
+          docker compose -f 'docker/docker-compose.yaml' up -d --build --wait
+      - name: Verify Running Containers
+        run: docker compose -f 'docker/docker-compose.yaml' ps
+      - name: Debug Logs on Failure
+        if: failure()
+        run: docker compose -f 'docker/docker-compose.yaml' logs
+      
+      - name: 🌟 wait till all servers up (in docker)
+        run: |
+          cd scripts/
+          chmod +x checkservice.sh
+          ./checkservice.sh
+
+      - name: Run Tests in /packages/test (All test)
+        run: |
+          cd packages/test
+          npm run test
+      
+
+      
+
+      
+
