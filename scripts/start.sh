@@ -1,5 +1,3 @@
-
-
 #!/bin/bash
 
 # ============================================================
@@ -96,15 +94,29 @@ for SERVICE in "${SERVICES[@]}"; do
         while IFS='=' read -r key value; do
             if [[ -n "$key" && "$key" != "#"* && "$key" == "${SERVICE_UPPER}_"* ]]; then
                 var_name=${key#${SERVICE_UPPER}_}  
-                key_placeholder="\${$var_name}"  
+                key_placeholder="\${$var_name}"
+                quoted_placeholder="\"\${$var_name}\""
+
+                # Escape special characters for `sed`
+                escaped_value=$(printf '%s\n' "$value" | sed 's/[\/&]/\\&/g')
+
+                # echo "Replacing: ${key_placeholder} -> ${escaped_value}"
+                # echo "Replacing: ${quoted_placeholder} -> \"${escaped_value}\""
 
                 if [[ "$OSTYPE" == "darwin"* ]]; then
-                    sed -i "" "s#${key_placeholder}#${value}#g" "$TARGET_FILE"
+                    # First replace ${VAR} → value
+                    sed -i "" "s#${key_placeholder}#${escaped_value}#g" "$TARGET_FILE"
+                    # Then replace "${VAR}" → "value"
+                    sed -i "" "s#${quoted_placeholder}#\"${escaped_value}\"#g" "$TARGET_FILE"
                 else
-                    sed -i "s#${key_placeholder}#${value}#g" "$TARGET_FILE"
+                    # First replace ${VAR} → value
+                    sed -i "s#${key_placeholder}#${escaped_value}#g" "$TARGET_FILE"
+                    # Then replace "${VAR}" → "value"
+                    sed -i "s#${quoted_placeholder}#\"${escaped_value}\"#g" "$TARGET_FILE"
                 fi
             fi
         done < "$VARIABLES_FILE"
+
 
         printf "${GREEN}${CHECK} Updated ${TARGET_FILE} with environment variables.${RESET}\n"
     done
@@ -143,19 +155,32 @@ for ((i=0; i<${#EXAMPLE_COMPOSE_FILES[@]}; i++)); do
         continue
     fi
 
-    # 🔄 Replace Variables in Docker Compose File
     while IFS='=' read -r key value; do
         if [[ -n "$key" && "$key" != "#"* ]]; then
-            var_name="${key}"  
-            key_placeholder="\${$var_name}"  
+            var_name="${key}"
+            key_placeholder="\${$var_name}"
+            quoted_placeholder="\"\${$var_name}\""
+
+            # Escape special characters for `sed`
+            escaped_value=$(printf '%s\n' "$value" | sed 's/[\/&]/\\&/g')
+
+            # echo "Replacing: ${key_placeholder} -> ${escaped_value}"
+            # echo "Replacing: ${quoted_placeholder} -> \"${escaped_value}\""
 
             if [[ "$OSTYPE" == "darwin"* ]]; then
-                sed -i "" "s#${key_placeholder}#${value}#g" "$TARGET_FILE"
+                # First replace ${VAR} → value
+                sed -i "" "s#${key_placeholder}#${escaped_value}#g" "$TARGET_FILE"
+                # Then replace "${VAR}" → "value"
+                sed -i "" "s#${quoted_placeholder}#\"${escaped_value}\"#g" "$TARGET_FILE"
             else
-                sed -i "s#${key_placeholder}#${value}#g" "$TARGET_FILE"
+                # First replace ${VAR} → value
+                sed -i "s#${key_placeholder}#${escaped_value}#g" "$TARGET_FILE"
+                # Then replace "${VAR}" → "value"
+                sed -i "s#${quoted_placeholder}#\"${escaped_value}\"#g" "$TARGET_FILE"
             fi
         fi
     done < "$VARIABLES_FILE"
+
 
     printf "${GREEN}${CHECK} Updated ${TARGET_FILE} with environment variables.${RESET}\n"
 done

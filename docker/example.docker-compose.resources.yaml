@@ -35,7 +35,7 @@ services:
     container_name: ${AUTH_REDIS_CONTAINER}
     image: ${AUTH_REDIS_IMAGE}
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", ${AUTH_REDIS_PASSWORD}]
+    command: ["redis-server", "--requirepass", "${AUTH_REDIS_PASSWORD}"]
     ports:
       - "${AUTH_REDIS_PORT}:6379"
     volumes:
@@ -45,7 +45,7 @@ services:
     container_name: ${DUMMY_REDIS_CONTAINER}
     image: ${DUMMY_REDIS_IMAGE}
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", ${DUMMY_REDIS_PASSWORD}]
+    command: ["redis-server", "--requirepass", "${DUMMY_REDIS_PASSWORD}"]
     ports:
       - "${DUMMY_REDIS_PORT}:6379"
     volumes:

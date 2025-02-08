@@ -1,9 +1,12 @@
 version: '3.8'
 
+networks:
+  all_network:
+    driver: bridge
 services:
   auth:
     container_name: AuthService
-    image: ${AUTH_POSTGRES_IMAGE}
+    image: ${AUTH_IMAGE}
     environment:
       DB_HOST: postgres_auth
       DB_PORT: 5432
@@ -12,16 +15,22 @@ services:
       DB_NAME: ${AUTH_DB_NAME}
       REDIS_HOST: redis_auth
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ${AUTH_REDIS_PASSWORD}
+      PORT: ${AUTH_PORT}
+      JWT_SECRET: ${AUTH_JWT_SECRET}
     ports:
       - "${AUTH_PORT}:${AUTH_PORT}"
     depends_on:
       postgres_auth:
+        condition: service_healthy
       redis_auth:
         condition: service_healthy
+    networks:
+      - all_network
 
   dummy:
     container_name: DummyService
-    image: ${DUMMY_POSTGRES_IMAGE}
+    image: ${DUMMY_IMAGE}
     environment:
       DB_HOST: postgres_dummy
       DB_PORT: 5432
@@ -30,12 +39,18 @@ services:
       DB_NAME: ${DUMMY_DB_NAME}
       REDIS_HOST: redis_dummy
       REDIS_PORT: 6379
+      REDIS_PASSWORD: ${DUMMY_REDIS_PASSWORD}
+      PORT: ${DUMMY_PORT}
+      JWT_SECRET: ${DUMMY_JWT_SECRET}
     ports:
       - "${DUMMY_PORT}:${DUMMY_PORT}"
     depends_on:
       postgres_dummy:
+        condition: service_healthy
       redis_dummy:
         condition: service_healthy
+    networks:
+      - all_network
 
   postgres_auth:
     container_name: ${AUTH_POSTGRES_CONTAINER}
@@ -51,6 +66,14 @@ services:
       - pg_auth_data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_DB_USER} -d ${AUTH_DB_NAME}"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - all_network
+
 
   postgres_dummy:
     container_name: ${DUMMY_POSTGRES_CONTAINER}
@@ -66,12 +89,20 @@ services:
       - pg_dummy_data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DUMMY_DB_USER} -d ${DUMMY_DB_NAME}"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - all_network
+
 
   redis_auth:
     container_name: ${AUTH_REDIS_CONTAINER}
     image: ${AUTH_REDIS_IMAGE}
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", ${AUTH_REDIS_PASSWORD}]
+    command: ["redis-server", "--requirepass", "${AUTH_REDIS_PASSWORD}"]
     ports:
       - "${AUTH_REDIS_PORT}:6379"
     volumes:
@@ -81,12 +112,14 @@ services:
       interval: 10s
       retries: 5
       start_period: 5s
+    networks:
+      - all_network
 
   redis_dummy:
     container_name: ${DUMMY_REDIS_CONTAINER}
     image: ${DUMMY_REDIS_IMAGE}
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", ${DUMMY_REDIS_PASSWORD}]
+    command: ["redis-server", "--requirepass", "${DUMMY_REDIS_PASSWORD}"]
     ports:
       - "${DUMMY_REDIS_PORT}:6379"
     volumes:
@@ -96,6 +129,8 @@ services:
       interval: 10s
       retries: 5
       start_period: 5s
+    networks:
+      - all_network
 
 volumes:
   pg_auth_data:

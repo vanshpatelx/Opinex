@@ -16,12 +16,12 @@ services:
       JWT_SECRET: helloworld
       DB_HOST: "postgres"
       DB_PORT: 5432
-      DB_USER: "admin"
-      DB_PASSWORD: "password"
-      DB_NAME: "mydatabase"
+      DB_USER: admin
+      DB_PASSWORD: password
+      DB_NAME: mydatabase
       REDIS_HOST: "redis"
       REDIS_PORT: 6379
-      REDIS_PASSWORD: "password"
+      REDIS_PASSWORD: password
       PORT: 5002
     ports:
       - "5002:5002"
@@ -29,13 +29,13 @@ services:
       - dummy_network
 
   postgres:
-    container_name: "dummy_postgres_container"
-    image: "postgres:latest"
+    container_name: dummy_postgres_container
+    image: postgres:latest
     restart: unless-stopped
     environment:
-      POSTGRES_USER: "admin"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_DB: "mydatabase"
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
     ports:
       - "5432:5432"
     volumes:
@@ -46,8 +46,8 @@ services:
       - dummy_network
 
   redis:
-    container_name: "dummy_redis_container"
-    image: "redis:latest"
+    container_name: dummy_redis_container
+    image: redis:latest
     restart: unless-stopped
     command: ["redis-server", "--requirepass", "password"]
     ports:

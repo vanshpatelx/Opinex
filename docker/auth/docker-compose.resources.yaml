@@ -2,13 +2,13 @@ version: '3.8'
 
 services:
   postgres:
-    container_name: "auth_postgres_container"
-    image: "postgres:latest"
+    container_name: auth_postgres_container
+    image: postgres:latest
     restart: unless-stopped
     environment:
-      POSTGRES_USER: "admin"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_DB: "mydatabase"
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
     ports:
       - "5432:5432"
     volumes:
@@ -17,8 +17,8 @@ services:
       - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
 
   redis:
-    container_name: "auth_redis_container"
-    image: "redis:latest"
+    container_name: auth_redis_container
+    image: redis:latest
     restart: unless-stopped
     command: ["redis-server", "--requirepass", "password"]
     ports:
