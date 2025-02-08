@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/dummy", authRoutes);
 
 app.get("/dummy", (req: Request, res: Response) => {
-    res.send("Dummy Server");
+    res.send("🚀 🚀 Dummy Server");
 });
 
 app.get('/dummy/health', (req: Request, res: Response) => {

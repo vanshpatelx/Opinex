@@ -136,4 +136,4 @@ jobs:
         run: |
           cd scripts/
           chmod +x tag_images.sh
-          ./tag_images.sh vanshpatel latest $services_list
+          ./tag_images.sh ${{ secrets.DOCKER_USERNAME }} ${{ github.sha }} $services_list
