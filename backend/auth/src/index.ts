@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use("/auth", authRoutes);
 
 app.get("/auth", (req: Request, res: Response) => {
-    res.send("Express + TypeScript Server");
+    res.send("Auth Server");
 });
 
 app.get('/auth/health', (req: Request, res: Response) => {
