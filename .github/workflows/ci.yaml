@@ -80,8 +80,7 @@ jobs:
       - name: Start Turbo Dev
         run: |
           turbo build
-          turbo dev &  # Run in background
-          echo $! > turbo_dev.pid  # Save PID
+          nohup turbo dev > turbo.log 2>&1 & echo $! > turbo_dev.pid
 
       - name: Wait Until All Servers are Up
         run: |
