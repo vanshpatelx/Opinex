@@ -96,12 +96,6 @@ jobs:
       - name: Stop Turbo Dev
         run: |
           tmux kill-session -t turbo_session || echo "Turbo session not running"
-      
-      - name: Wait Until All Servers are Up
-        run: |
-          cd scripts/
-          chmod +x checkservice.sh
-          ./checkservice.sh
 
       - name: Cleanup Resources
         run: |
