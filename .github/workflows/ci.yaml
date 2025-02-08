@@ -19,13 +19,30 @@ jobs:
         run: |
           changed_services=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^backend/' | cut -d'/' -f2 | sort -u)
           echo "Detected changes in: $changed_services"
-          services_json=$(echo "$changed_services" | jq -R -c 'split("\n") | map(select(. != ""))')
+
+          # Ensure JSON format even if empty
+          if [[ -z "$changed_services" ]]; then
+            services_json="[]"
+          else
+            services_json=$(echo "$changed_services" | jq -R -c 'split("\n") | map(select(. != ""))')
+          fi
+
           echo "services=$services_json" >> "$GITHUB_OUTPUT"
+
+
+      # - name: Detect changed microservices
+      #   id: filter
+      #   run: |
+      #     changed_services=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '^backend/' | cut -d'/' -f2 | sort -u)
+      #     echo "Detected changes in: $changed_services"
+      #     services_json=$(echo "$changed_services" | jq -R -c 'split("\n") | map(select(. != ""))')
+      #     echo "services=$services_json" >> "$GITHUB_OUTPUT"
 
   build:
     needs: detect-changes
     runs-on: ubuntu-latest
     environment: opinex
+    if: needs.detect-changes.outputs.services != '[]'
     strategy:
       matrix:
         service: ${{ fromJson(needs.detect-changes.outputs.services) }}
