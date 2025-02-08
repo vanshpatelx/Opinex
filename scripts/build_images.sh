@@ -4,8 +4,6 @@
 # 🌟 Backend Docker Image Build Script
 # ============================================================
 
-DOCKER_REPO="vanshpatel"
-
 # 🎨 Define Colors for UI Formatting
 GREEN=$(printf "\e[32m")
 YELLOW=$(printf "\e[33m")
@@ -79,11 +77,9 @@ for SERVICE in "${SERVICES[@]}"; do
     fi
 
     IMAGE_NAME="${SERVICE}-service:${VERSION}"
-    IMAGE_NAME_TAG="${DOCKER_REPO}/${IMAGE_NAME}"
-
 
     printf "${CYAN}${BUILD} Building image for ${BOLD}$SERVICE${RESET}...${RESET}\n"
-    docker build -f "$SERVICE_DOCKERFILE" -t "$IMAGE_NAME_TAG" .
+    docker build -f "$SERVICE_DOCKERFILE" -t "$IMAGE_NAME" .
 
     if [[ $? -eq 0 ]]; then
         printf "${GREEN}${CHECK} Successfully built ${BOLD}$IMAGE_NAME${RESET}\n"
