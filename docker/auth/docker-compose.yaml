@@ -1,8 +1,8 @@
 version: '3.8'
 
 networks:
-  auth_network:
-    driver: bridge
+  main_network:
+    external: true
 
 services:
   app:
@@ -23,10 +23,15 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: password
       PORT: 5001
+      RABBITMQ_USER: admin
+      RABBITMQ_PASSWORD: password
+      RABBITMQ_HOST: "rabbitmq"
+      RABBITMQ_PORT: 5672
+      RABBITMQ_EXCHANGES: auth_exchange,dlx_exchange
     ports:
       - "5001:5001"
     networks:
-      - auth_network
+      - main_network
 
   postgres:
     container_name: auth_postgres_container
@@ -43,7 +48,7 @@ services:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./db/seed.sql:/docker-entrypoint-initdb.d/seed.sql
     networks:
-      - auth_network
+      - main_network
 
   redis:
     container_name: auth_redis_container
@@ -55,7 +60,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - auth_network
+      - main_network
 
 volumes:
   pg_data:

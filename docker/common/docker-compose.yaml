@@ -1,5 +1,9 @@
 version: '3.8'
 
+networks:
+  main_network:
+    external: true
+
 services:
   rabbitmq:
     image: rabbitmq:3-management
@@ -16,14 +20,12 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - ./rabbitmq/definitions.json:/etc/rabbitmq/definitions.json  # Preconfigured Exchanges & Queues
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
     networks:
-      - rabbitmq_network
+      - main_network
 
 volumes:
   rabbitmq_data:
 
-networks:
-  rabbitmq_network:
-    driver: bridge
 
 # docker run --rm rabbitmq:3-management rabbitmqctl hash_password adminpass(passowrd creations)

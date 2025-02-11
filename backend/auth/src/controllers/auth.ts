@@ -6,6 +6,7 @@ import { logger } from "../utils/logger";
 import { postgresClient } from "../config/DB/db";
 import { generateUniqueId } from "../utils/id";
 import { generateToken } from "../utils/jwt";
+import { rabbitMQClientPromise } from "../config/Brokers/RabbitMQClient";
 
 // Define a schema
 const userSchema = z.object({
@@ -72,7 +73,8 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         await redisClient.set(cacheKey, JSON.stringify(userData), "EX", 86400);
         logger.info({ message: "Auth Register: User cached", email, userId });
 
-        // PubSub logic (if applicable)
+        // PubSub
+        await (await rabbitMQClientPromise).registerUser(userId, email, hashedPassword);
         logger.info({ message: "Auth Register: send to pubsub for register", email, userId });
 
         // Generate JWT token

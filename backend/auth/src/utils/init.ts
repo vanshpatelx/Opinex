@@ -1,6 +1,8 @@
 import { postgresClient } from "../config/DB/db";
 import { redisClient } from "../config/Cache/RedisClient";
 import { logger } from "./logger";
+import amqp from "amqplib";
+import { config } from "../config/config";
 
 async function checkPostgresConnection(): Promise<boolean> {
     return new Promise((resolve) => {
@@ -30,13 +32,26 @@ async function checkRedisConnection(): Promise<boolean> {
     });
 }
 
+async function checkRabbitMQConnection(): Promise<boolean> {
+    try {
+        const connection = await amqp.connect(config.rabbitmq.url);
+        await connection.close();
+        logger.info("RabbitMQ is ready.");
+        return true;
+    } catch (error: any) {
+        logger.error("RabbitMQ is not ready:", error.message);
+        return false;
+    }
+}
+
 export async function initServices() {
     let retries = 5;
     while (retries > 0) {
         const dbReady = await checkPostgresConnection();
         const cacheReady = await checkRedisConnection();
+        const rabbitMQReady = await checkRabbitMQConnection();
 
-        if (dbReady && cacheReady) {
+        if (dbReady && cacheReady && rabbitMQReady) {
             logger.info("✅ All services are ready!");
             return;
         }

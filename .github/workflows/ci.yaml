@@ -56,7 +56,18 @@ jobs:
           cd scripts/
           chmod +x start.sh
           ./start.sh
-
+      
+      - name: ✅ Docker Network creations
+        run: |
+          docker network create main_network
+      
+      - name:  🚀  Run common docker Resources (like pubsub)
+        run: |
+          cd docker
+          cd common
+          docker compose up -d
+          echo " 🚀 Docker common resources running"
+ 
       - name: 🐳 Configure Resources in Docker
         run: |
           docker compose -f 'docker/docker-compose.resources.yaml' up -d --build --wait

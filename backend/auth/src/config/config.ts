@@ -20,8 +20,18 @@ export const config = {
         port: Number(process.env.DB_PORT)
     },
     port: Number(process.env.PORT),
-
+    rabbitmq: {
+        user: process.env.RABBITMQ_USER || "admin",
+        password: process.env.RABBITMQ_PASSWORD || "password",
+        host: process.env.RABBITMQ_HOST || "localhost",
+        port: Number(process.env.RABBITMQ_PORT) || 5672,
+        get url() {
+            return `amqp://${this.user}:${this.password}@${this.host}:${this.port}`;
+        },
+        exchanges: (process.env.RABBITMQ_EXCHANGES || "auth_exchange,dlx_exchange").split(",") // Supports multiple exchanges
+    }
 };
+
 
 export const loadEnv = () => {
     console.log("==================================");
