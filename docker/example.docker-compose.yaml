@@ -1,23 +1,30 @@
 version: '3.8'
 
+
 networks:
-  all_network:
-    driver: bridge
+  main_network:
+    external: true
+
 services:
   auth:
     container_name: AuthService
     image: ${AUTH_IMAGE}
     environment:
+      JWT_SECRET: ${AUTH_JWT_SECRET}
       DB_HOST: postgres_auth
-      DB_PORT: 5432
+      DB_PORT: ${AUTH_DB_PORT}
       DB_USER: ${AUTH_DB_USER}
       DB_PASSWORD: ${AUTH_DB_PASSWORD}
       DB_NAME: ${AUTH_DB_NAME}
       REDIS_HOST: redis_auth
-      REDIS_PORT: 6379
+      REDIS_PORT: ${AUTH_REDIS_PORT}
       REDIS_PASSWORD: ${AUTH_REDIS_PASSWORD}
       PORT: ${AUTH_PORT}
-      JWT_SECRET: ${AUTH_JWT_SECRET}
+      RABBITMQ_USER: ${AUTH_RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${AUTH_RABBITMQ_PASSWORD}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: ${AUTH_RABBITMQ_PORT}
+      RABBITMQ_EXCHANGES: ${AUTH_RABBITMQ_EXCHANGES}
     ports:
       - "${AUTH_PORT}:${AUTH_PORT}"
     depends_on:
@@ -26,7 +33,7 @@ services:
       redis_auth:
         condition: service_healthy
     networks:
-      - all_network
+      - main_network
 
   dummy:
     container_name: DummyService
@@ -50,7 +57,7 @@ services:
       redis_dummy:
         condition: service_healthy
     networks:
-      - all_network
+      - main_network
 
   postgres_auth:
     container_name: ${AUTH_POSTGRES_CONTAINER}
@@ -72,7 +79,7 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - all_network
+      - main_network
 
 
   postgres_dummy:
@@ -95,7 +102,7 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - all_network
+      - main_network
 
 
   redis_auth:
@@ -113,7 +120,7 @@ services:
       retries: 5
       start_period: 5s
     networks:
-      - all_network
+      - main_network
 
   redis_dummy:
     container_name: ${DUMMY_REDIS_CONTAINER}
@@ -130,7 +137,7 @@ services:
       retries: 5
       start_period: 5s
     networks:
-      - all_network
+      - main_network
 
 volumes:
   pg_auth_data:

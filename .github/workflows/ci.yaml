@@ -59,7 +59,7 @@ jobs:
       
       - name: ✅ Docker Network creations
         run: |
-          docker network create main_network
+          docker network ls | grep main_network || docker network create main_network
       
       - name:  🚀  Run common docker Resources (like pubsub)
         run: |

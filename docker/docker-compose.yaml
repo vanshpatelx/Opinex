@@ -1,13 +1,16 @@
 version: '3.8'
 
+
 networks:
-  all_network:
-    driver: bridge
+  main_network:
+    external: true
+
 services:
   auth:
     container_name: AuthService
     image: "auth-service:latest"
     environment:
+      JWT_SECRET: helloworld
       DB_HOST: postgres_auth
       DB_PORT: 5432
       DB_USER: admin
@@ -17,7 +20,11 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: password
       PORT: 5001
-      JWT_SECRET: helloworld
+      RABBITMQ_USER: admin
+      RABBITMQ_PASSWORD: password
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_EXCHANGES: auth_exchange,dlx_exchange
     ports:
       - "5001:5001"
     depends_on:
@@ -26,7 +33,7 @@ services:
       redis_auth:
         condition: service_healthy
     networks:
-      - all_network
+      - main_network
 
   dummy:
     container_name: DummyService
@@ -50,7 +57,7 @@ services:
       redis_dummy:
         condition: service_healthy
     networks:
-      - all_network
+      - main_network
 
   postgres_auth:
     container_name: auth_postgres_container
@@ -72,7 +79,7 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - all_network
+      - main_network
 
 
   postgres_dummy:
@@ -95,7 +102,7 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - all_network
+      - main_network
 
 
   redis_auth:
@@ -113,7 +120,7 @@ services:
       retries: 5
       start_period: 5s
     networks:
-      - all_network
+      - main_network
 
   redis_dummy:
     container_name: dummy_redis_container
@@ -130,7 +137,7 @@ services:
       retries: 5
       start_period: 5s
     networks:
-      - all_network
+      - main_network
 
 volumes:
   pg_auth_data:
