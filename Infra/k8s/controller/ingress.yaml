@@ -1,1 +1,129 @@
-#ingress
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: auth-ingress
+#   namespace: auth  # Ingress should be in the same namespace as the service
+#   annotations:
+#     traefik.ingress.kubernetes.io/router.service-namespaces: "auth"
+# spec:
+#   ingressClassName: traefik
+#   rules:
+#     - host: api.89fc141f-e3a6-47d3-81af-d7eee5e071ed.k8s.civo.com
+#       http:
+#         paths:
+#           - path: /auth
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: auth-service
+#                 port:
+#                   number: 5001
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: dummy-ingress
+#   namespace: dummy  # Move the Ingress to the dummy namespace
+#   annotations:
+#     traefik.ingress.kubernetes.io/router.service-namespaces: "dummy"
+# spec:
+#   ingressClassName: traefik
+#   rules:
+#     - host: api.89fc141f-e3a6-47d3-81af-d7eee5e071ed.k8s.civo.com
+#       http:
+#         paths:
+#           - path: /dummy
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: dummy-service
+#                 port:
+#                   number: 5002
+
+
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: auth-ingress
+#   namespace: auth
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#     - host: auth-opinex.8575a938-0bdc-43d5-b432-de09660d5157.k8s.civo.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: auth-service
+#                 port:
+#                   number: 5001
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: dummy-ingress
+#   namespace: dummy
+#   labels:
+#     app: dummy-service
+# spec:
+#   ingressClassName: nginx
+#   rules:
+#     - host: dummy-opinex.8575a938-0bdc-43d5-b432-de09660d5157.k8s.civo.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: dummy-service
+#                 port:
+#                   number: 5002
+
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dummy-ingress
+  namespace: dummy
+  annotations:
+    kubernetes.io/ingress.class: traefik
+  labels:
+    app: dummy-service
+spec:
+  # ingressClassName: traefik
+  rules:
+    - host: dummy.5ee0752b-48a9-416b-bc9e-ae737960a4a4.k8s.civo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dummy-service
+                port:
+                  number: 5002
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: auth-ingress
+  namespace: auth
+  annotations:
+    kubernetes.io/ingress.class: traefik
+  labels:
+    app: auth-service
+spec:
+  # ingressClassName: traefik
+  rules:
+    - host: auth.5ee0752b-48a9-416b-bc9e-ae737960a4a4.k8s.civo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 5001
