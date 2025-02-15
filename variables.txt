@@ -44,3 +44,22 @@ DUMMY_REDIS_PASSWORD=password
 DUMMY_PORT=5002
 
 
+
+
+
+
+
+DB_AUTH_DB_HOST=localhost
+DB_AUTH_DB_PORT=5432
+DB_AUTH_DB_USER=admin
+DB_AUTH_DB_PASSWORD=password
+DB_AUTH_DB_NAME=mydatabase
+
+DB_RABBITMQ_USER=admin
+DB_RABBITMQ_PASSWORD=password
+DB_RABBITMQ_HOST=localhost
+DB_RABBITMQ_PORT=5672
+DB_PORT=5003
+DB_RABBITMQ_QUEUES=auth_registered_queue,dlx_exchange
+
+DB_IMAGE="db-service:latest
