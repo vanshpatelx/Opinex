@@ -13,11 +13,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 
-app.get("/db", (req: Request, res: Response) => {
+app.get("/dbserver", (req: Request, res: Response) => {
     res.send("🚀 🚀 DB Server");
 });
 
-app.get('/db/health', (req: Request, res: Response) => {
+app.get('/dbserver/health', (req: Request, res: Response) => {
   res.status(200).json({ success: true, message: "Server is running." });
 });
 
@@ -36,7 +36,7 @@ async function startServer() {
         await startConsumers();
 
         app.listen(port, () => {
-            logger.info(`🚀 Server is running on port: ${port}`);
+            logger.info(`🚀 DBserver is running on port: ${port}`);
         });
     } catch (error) {
         logger.error("❌ Failed to start server:", error);

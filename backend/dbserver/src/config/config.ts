@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const config = {
-    port: 5003,
+    port: Number(process.env.PORT) || 5003,
     dbUser: {
         user: process.env.AUTH_DB_USER,
         host: process.env.AUTH_DB_HOST,

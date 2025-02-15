@@ -1,0 +1,50 @@
+version: '3.8'
+
+networks:
+  main_network:
+    external: true
+
+services:
+  app:
+    container_name: DBService
+    image: ${DBSERVER_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      AUTH_DB_HOST: "authPostgres"
+      AUTH_DB_PORT: ${AUTH_DB_PORT}
+      AUTH_DB_USER: ${AUTH_DB_USER}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      AUTH_DB_NAME: ${AUTH_DB_NAME}
+      PORT: ${PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      RABBITMQ_HOST: "rabbitmq"
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_QUEUES: ${RABBITMQ_QUEUES}
+    ports:
+      - "${PORT}:${PORT}"
+    networks:
+      - main_network
+
+  authPostgres:
+    container_name: ${AUTH_POSTGRES_CONTAINER}
+    image: ${POSTGRES_IMAGE}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${AUTH_DB_USER}
+      POSTGRES_PASSWORD: ${AUTH_DB_PASSWORD}
+      POSTGRES_DB: ${AUTH_DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./auth/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./auth/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    networks:
+      - main_network
+
+volumes:
+  pg_data:
