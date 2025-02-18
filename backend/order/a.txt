@@ -1,0 +1,89 @@
+Order Server
+- Receiving order by endpoints
+- Send order to Queue for matching engine an also for DbServers
+- Store in redis too
+- Order Status or related endpoint
+- Order Details All
+- Orders by users
+- All orders for admin or data analysis
+- single order deatils
+- Orders for specific event or related
+
+
+endpoints
+- Create order
+- Orderby orderID
+- Order by eventID
+- Order by UserID
+
+
+Trade engine (base form)
+{
+    type:  "Buy" or "Sell"
+    order:  {
+        OrderID:
+        price:
+        Qty:
+    }
+}
+
+Orders looks like
+- OrderID
+- EventID
+- Type (Buy | Sell)
+- Opt (Yes | No)
+- Price
+- Qty
+- UserID
+- Status
+- TimeStamp
+
+
+
+Create order
+- jwt validations
+- zod validations
+- Orders send to DbServers by pubsub
+- Convert to base form for trade engine
+- Orders send to trading engine  by pubsub
+
+
+Orderby OrderID
+- jwt validations
+- zod validations
+- Orders Detatils from cache
+- Orders Detatils from DB and add to cache
+
+
+Order by eventID
+- jwt validations
+- zod validations
+- Orders Detatils from cache
+- Orders Detatils from DB and add to cache
+
+Order by UserID
+- jwt validations
+- zod validations
+- Orders Detatils from cache
+- Orders Detatils from DB and add to cache
+
+
+
+
+Task
+- OrderCreate
+    ✅ pubsub done
+    ✅ model done
+    ✅ config data from Envs
+    ✅ jwt middleware
+     init functions
+    ✅ routes
+    ✅ controllers check
+    and test endpoint
+    and then solve errors
+    setup best main functions
+
+Query settlements
+- Orderby orderID
+- Order by eventID
+- Order by UserID
