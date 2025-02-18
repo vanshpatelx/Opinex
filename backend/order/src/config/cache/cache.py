@@ -1,4 +1,18 @@
 # src/config/cache/cache.py
+"""
+Redis Cache Connection
+
+Handles connection and operations for Redis caching.
+
+Features:
+1. Manages a Redis connection pool.
+2. Supports GET and SET operations.
+3. Handles auto-reconnect in case of failures.
+
+Author: Vansh Patel (remotevansh@gmail.com)
+Last Updated: February 19, 2025
+"""
+
 import redis
 import json
 import asyncio
@@ -44,7 +58,7 @@ class Cache:
     async def get(cls, key: str):
         """Get data from Redis."""
         redis = await cls.get_redis()
-        data = await redis.get(key)
+        data = redis.get(key)
         return json.loads(data) if data else None
 
     @classmethod

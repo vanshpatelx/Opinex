@@ -139,3 +139,18 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+
+
+__pycache__/
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore environment files
+.env
+.vscode/
+.idea/
+.DS_Store
+node_modules/

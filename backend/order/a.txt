@@ -76,12 +76,12 @@ Task
     ✅ model done
     ✅ config data from Envs
     ✅ jwt middleware
-     init functions
+    ✅  init functions
     ✅ routes
     ✅ controllers check
-    and test endpoint
-    and then solve errors
-    setup best main functions
+    ✅ and test endpoint
+    ✅ and then solve errors
+    ✅ setup best main functions
 
 Query settlements
 - Orderby orderID

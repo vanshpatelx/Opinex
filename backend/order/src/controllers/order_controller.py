@@ -1,6 +1,24 @@
 # src/controllers/order_controller.py
 
-from fastapi import HTTPException
+"""
+Order Controller
+
+Handles order-related operations, including:
+1. Create Order: `create_order`
+2. Retrieve Order by OrderID: `order_by_orderID`
+3. Retrieve Orders by EventID: `orders_by_eventID`
+4. Retrieve Orders by UserID: `orders_by_userID`
+
+Author: Vansh Patel (remotevansh@gmail.com)
+Last Updated: February 19, 2025
+
+Related Models:
+- `OrderReq`
+- `Order`
+- `UserPayload`
+"""
+
+from fastapi import HTTPException, APIRouter, Depends
 from config.cache.cache import Cache
 from config.pubsub.pubsub import PubSub
 from models.order_model import OrderReq, Order
@@ -10,10 +28,26 @@ from controllers.event_controller import get_event_by_id
 from utils.logger import logger
 from datetime import datetime
 
-async def create_order(order: OrderReq, user: UserPayload):
-    """Create a new order."""
+router = APIRouter()
 
-    # Req_data validations
+@router.post("/order")
+async def create_order(order: OrderReq, user: UserPayload):
+    """
+    Creates and processes a new order.
+
+    Steps:
+        1. Validate event status.
+        2. Generate Order ID.
+        3. Store in cache and publish to DB.
+        4. Transform for trading engine.
+        5. Publish to trading engine.
+
+    Returns:
+        dict: Order creation confirmation.
+
+    Last Updated: February 19, 2025
+    """
+    # Validate event
     order_data = order.model_dump()
     user_data = user.model_dump()
 
@@ -37,18 +71,20 @@ async def create_order(order: OrderReq, user: UserPayload):
 
     order_dict = order_obj.model_dump()
 
-    # Converting long to string for string convert issue
+    # Convert IDs to string format
     order_dict["id"] = str(order_obj.id)
     order_dict["EventID"] = str(order_obj.EventID)
     order_dict["UserID"] = str(order_obj.UserID)
-    logger.info(f"📦 Final Order Dict: {order_dict}")
+    logger.info(f"📦 Final Order: {order_dict}")
 
+    # Store order in cache
     await Cache.set(f"order:{order_obj.id}", order_dict)
-    
-    # send to Dbserver
+    logger.info(f"📦 Cache Set Order: {order_dict['id']}")
+
+    # Send to DB server
     await PubSub.send(order_dict, 'Order_Exchange', 'Order.add')
 
-    # tranform for trade server
+    # Transform for trading engine
     order_type, order_price = transform_order(order_dict)
 
     trading_order = {
@@ -60,13 +96,17 @@ async def create_order(order: OrderReq, user: UserPayload):
     }
     await PubSub.send(trading_order, 'Trade_Exchange', 'Trade.add')
 
-    logger.info(f"Order {order_obj.id} created successfully")
+    logger.info(f"✅ Order {order_obj.id} created successfully")
     return {"message": "Order created successfully"}
 
 def transform_order(order_data):
-    """Transforms order type and price based on order options."""
+    """
+    Transforms order type and price based on order options.
+
+    Last Updated: February 19, 2025
+    """
     order_type, order_opt, order_price = order_data["orderType"], order_data["opt"], order_data["price"]
-    
+
     if order_type == "BUY" and order_opt == "YES":
         return "BUY", order_price
     elif order_type == "SELL" and order_opt == "YES":
@@ -75,23 +115,5 @@ def transform_order(order_data):
         return "SELL", 1000 - order_price
     elif order_type == "SELL" and order_opt == "NO":
         return "SELL", order_price
-    
+
     return order_type, order_price
-
-
-
-    # check it's live event or not
-    # gen ID
-    # add to redis
-    # send to dbserver
-    # Convert to base form trading engine
-    # send to trading engine
-
-
-# Create order
-# - jwt validations
-# - zod validations
-# - Orders send to DbServers by pubsub
-# - Convert to base form for trade engine
-# - Orders send to trading engine  by pubsub
-

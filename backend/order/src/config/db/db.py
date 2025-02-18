@@ -1,10 +1,27 @@
 # src/config/db/db.py
+
+"""
+PostgreSQL Database Connection
+
+Manages connection pooling and queries for PostgreSQL using `asyncpg`.
+
+Features:
+1. Initializes a connection pool to PostgreSQL.
+2. Provides methods for executing queries.
+3. Supports graceful shutdown.
+
+Author: Vansh Patel (remotevansh@gmail.com)
+Last Updated: February 19, 2025
+"""
+
 import asyncpg
 import asyncio
 from utils.logger import logger
 from config.config import config
 
 class Database:
+    """Handles PostgreSQL connection pooling and queries."""
+    
     pool: asyncpg.Pool | None = None
     reconnect_attempts = 5
     reconnect_delay = 5  # in seconds
