@@ -20,6 +20,7 @@ from config.db.db import Database
 from config.cache.cache import Cache
 import aio_pika
 
+
 class ServiceInitializer:
     @staticmethod
     async def init():

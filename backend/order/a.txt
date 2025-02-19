@@ -83,7 +83,77 @@ Task
     ✅ and then solve errors
     ✅ setup best main functions
 
-Query settlements
-- Orderby orderID
-- Order by eventID
-- Order by UserID
+✅Query settlements
+✅ Orderby orderID
+✅ Order by eventID
+✅ Order by UserID
+
+
+Order by eventID
+- Check in redis
+
+logic
+# normal logic
+- We store in redis like: Events:{EventID}
+
+
+
+✅ Orderby orderID => Normal
+
+
+✅ Order by eventID => User => Implement cursor
+✅ Order by UserID => User => Implement cursor
+
+
+Divide into two functions based on Role
+=> Order by EventID => Admin Focused
+=> Order by EventID => User Focused
+
+User Focused
+-> We use cursor and offset based system, give last recent items
+-> Store in Cache But how ?
+
+=> Store in cache for small amount of times like 10 sec - 20 sec max
+
+# controllers
+Admin Focused
+=> Check in cache, with offset and  orders:Event${eventID}:${cursor}:${limit}
+=> we are storing first page as cursor = 0
+=> otherwise we take cursor as TimeStamp
+=> DBQuery
+=> Add to cache
+
+User Focused
+=> Check in cache, with offset and orders:Event${eventID}:{userID}:${cursor}:${limit}
+=> we are storing first page as cursor = 0
+=> otherwise we take cursor as TimeStamp
+=> DBQuery : includes userID so we only got userID related orders means order by that specific person
+=> Add to cache
+
+
+
+Order by UserID
+=> Order by UserID => Admin Focused
+=> Order by UserID => User Focused
+
+# controllers
+Admin Focused
+=> Check in cache, with offset and  orders:User{UserID}:${cursor}:${limit}
+=> we are storing first page as cursor = 0
+=> otherwise we take cursor as TimeStamp
+=> DBQuery
+=> Add to cache
+
+User Focused
+=> Check in cache, with offset and orders:Event${eventID}:{userID}:${cursor}:${limit}
+=> we are storing first page as cursor = 0
+=> otherwise we take cursor as TimeStamp
+=> DBQuery : includes userID so we only got userID related orders means order by that specific person
+=> Add to cache
+
+
+order:{orderID} : store whole order
+order:{orderID}:UserID : return userID
+orders:Event{eventID}:{cursor}:{limit} : admin : return list of orders
+orders:Event{eventID}:{user.UserID}:{cursor}:{limit} : user : return list of orders
+orders:User{userID}:{cursor}:{limit} : admin + user : return list of orders

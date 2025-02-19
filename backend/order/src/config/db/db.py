@@ -7,7 +7,7 @@ Manages connection pooling and queries for PostgreSQL using `asyncpg`.
 
 Features:
 1. Initializes a connection pool to PostgreSQL.
-2. Provides methods for executing queries.
+2. Provides methods for executing queries safely.
 3. Supports graceful shutdown.
 
 Author: Vansh Patel (remotevansh@gmail.com)
@@ -32,7 +32,8 @@ class Database:
         attempt = 0
         while attempt < cls.reconnect_attempts:
             try:
-                cls.pool = await asyncpg.create_pool(config.DATABASE_URL)
+                loop = asyncio.get_running_loop()  # Ensure correct event loop
+                cls.pool = await asyncpg.create_pool(dsn=config.DATABASE_URL, loop=loop)
                 logger.info("✅ Connected to PostgreSQL.")
                 return True
             except Exception as e:
@@ -51,11 +52,18 @@ class Database:
 
     @classmethod
     async def fetch_one(cls, query: str, *args):
-        """Fetch a single row from the database."""
+        """Fetch a single row using the connection pool safely."""
         pool = await cls.get_pool()
+        
+        if pool is None:
+            logger.error("❌ Database pool is not initialized!")
+            return None
+
         try:
-            async with pool.acquire() as conn:
-                return await conn.fetchrow(query, *args)
+            async with pool.acquire() as conn:  # Use 'async with' to manage connection properly
+                result = await conn.fetchrow(query, *args)
+                logger.info(f"✅ Query Result: {result}")
+                return result
         except Exception as e:
             logger.error(f"⚠️ DB fetch_one error: {e}")
             return None
@@ -64,9 +72,16 @@ class Database:
     async def fetch_all(cls, query: str, *args):
         """Fetch multiple rows from the database."""
         pool = await cls.get_pool()
+        
+        if pool is None:
+            logger.error("❌ Database pool is not initialized!")
+            return None
+
         try:
             async with pool.acquire() as conn:
-                return await conn.fetch(query, *args)
+                result = await conn.fetch(query, *args)
+                logger.info(f"✅ Query Result: {result}")
+                return result
         except Exception as e:
             logger.error(f"⚠️ DB fetch_all error: {e}")
             return None
