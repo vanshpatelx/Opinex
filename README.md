@@ -1,5 +1,3 @@
-# Opinex
-
 # Opinex: Opinion Trading System
 
 ## Overview
