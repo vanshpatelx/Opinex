@@ -1,0 +1,103 @@
+Order Intake	
+RabbitMQ with
+Order Matching	
+Lock-Free Execution (Compare-And-Swap, Skip Lists, Memory Pools)
+
+Storage & Logging	
+Write-Ahead Logging (WAL) in Kafka for Microsecond Recovery
+
+4️⃣ Step-by-Step Execution Flow
+
+
+Price-Level Management
+Concurrent Skip List stores price levels in a sorted structure.
+HashMap (Price -> Order Queue) allows fast O(1) lookup of a specific price.
+🟢 3. Order Matching (Lock-Free)
+CAS (Compare-and-Swap) ensures atomic execution:
+Fetch best price from the heap (O(1))
+Validate it’s still the best price (CAS check)
+Match orders in FIFO sequence (Doubly Linked List)
+Update book in-memory & commit to log asynchronously
+
+
+Lock-Free Execution with Compare-And-Swap (CAS)
+
+💡 Why CAS?
+Traditional mutex locks cause latency spikes due to contention.
+Instead, we use CAS (Compare-And-Swap) to update orders atomically without locks.
+
+
+📌 2️⃣ Lock-Free Order Book with Skip Lists
+
+💡 Why Skip Lists?
+O(log N) Insert/Delete (better than AVL/B-Trees).
+Lock-Free Traversal & Updates (great for high-frequency trading).
+
+📌 3️⃣ Memory Pools for Ultra-Low Latency Allocations
+
+💡 Why Memory Pools?
+Reduces garbage collection (GC) latency.
+Pre-allocates objects in memory for faster reuse.
+
+
+Imp
+Memory Pools
+Skip Lists
+CAS
+
+
+Features
+Order DS
+Order Match
+RabbitMQ Order Taken
+Order Price Send
+Order Book Send
+- Design for multiple events / Exchange top class
+- WALocking Recovery and logs
+
+
+
+Order DS
+- OrderLevels by heaps - Buy order and sell order
+- HashMap[price] => orderlist[0]
+- OrderList for each prices
+
+OrderBook{
+    BuyOrders  OrderHeap         // Max Heap
+	SellOrders OrderHeap         
+}
+
+OrderHeap{
+    Price
+    HashMap
+}
+
+HashMap => point to linkedList of orders
+
+
+
+OrderBook{
+    BuyOrders  BuyOrderBook  // Min Heap
+	SellOrders SellOrderBook  // Max Heap
+}
+
+type BuyOrderBook []*PriceLevel
+type SellOrderBook []*PriceLevel
+
+type PriceLevel{
+    Price    float64
+	Quantity int
+	Index    int
+    store    HashMap
+}
+
+type HashMap{
+    Price float64
+    listOrders []Order
+}
+
+
+type Order{
+
+}
+
