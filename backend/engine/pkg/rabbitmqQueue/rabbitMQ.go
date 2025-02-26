@@ -2,10 +2,10 @@
 package rabbitmqQueue
 
 import (
-	"dummyengine/pkg/orderbook"
-	"dummyengine/pkg/pricelevel"
+	"dummyengine/pkg/exchange"
 	"encoding/json"
-	"log"
+	"dummyengine/pkg/logger"
+	"math/big"
 	"time"
 
 	"github.com/streadway/amqp"
@@ -13,25 +13,30 @@ import (
 
 // RabbitMQConsumer handles message consumption
 type RabbitMQQueue struct {
-	Conn      *amqp.Connection
-	Ch        *amqp.Channel
-	Queue     string
-	URL       string
-	OrderBook *orderbook.OrderBook // OrderBook instance
+	Conn     *amqp.Connection
+	Ch       *amqp.Channel
+	Queue    string
+	URL      string
+	Exchange *exchange.Exchange
 }
 
-// OrderMessage represents the structure received from RabbitMQ
-type OrderMessage struct {
-	Type  string           `json:"type"` // "buy" or "sell"
-	Order pricelevel.Order `json:"order"`
+// EventMessage represents the structure received from RabbitMQ
+type EventMessage struct {
+	Task          string `json:"task"`               // "Order" || "CreateEvent" || "Settlement"
+	ID            string `json:"eventId"`            // EventID
+	OrderID       string `json:"orderId,omitempty"`  // OrderID
+	OrderPrice    int    `json:"price,omitempty"`    // OrderPrice
+	OrderUserID   string `json:"userId,omitempty"`   // OrderUserID
+	OrderQuantity int    `json:"quantity,omitempty"` // OrderQuantity
+	Type          string `json:"type,omitempty"`     // "BUY" || "SELL"
 }
 
 // NewRabbitMQConsumer initializes a new consumer
 func NewRabbitMQQueue(url, queue, tradeQueue, priceQueue, orderBookQueue string) *RabbitMQQueue {
 	return &RabbitMQQueue{
-		Queue:     queue,
-		URL:       url,
-		OrderBook: nil, // Initialize to nil, will be set after connection
+		Queue:    queue,
+		URL:      url,
+		Exchange: nil, // Initialize to nil, will be set after connection
 	}
 }
 
@@ -42,15 +47,15 @@ func (c *RabbitMQQueue) Connect() {
 	// Attempt connection
 	c.Conn, err = amqp.Dial(c.URL)
 	if err != nil {
-		log.Fatalf("❌ Failed to connect to RabbitMQ: %v", err)
+		logger.Fatal("❌ Failed to connect to RabbitMQ", "error", err)
 	}
 
 	c.Ch, err = c.Conn.Channel()
 	if err != nil {
-		log.Fatalf("❌ Failed to open a channel: %v", err)
+		logger.Fatal("❌ Failed to open a channel", "error", err)
 	}
 
-	log.Printf("✅ Connected to RabbitMQ: %s (Queue: %s)", c.URL, c.Queue)
+	logger.Info("✅ Connected to RabbitMQ", "url", c.URL, "queue", c.Queue)
 
 	// Auto-reconnect on failure
 	c.Conn.NotifyClose(make(chan *amqp.Error))
@@ -63,7 +68,7 @@ func (c *RabbitMQQueue) Connect() {
 // Reconnect handles RabbitMQ reconnection logic
 func (c *RabbitMQQueue) reconnect() {
 	for {
-		log.Printf("🔄 Reconnecting to RabbitMQ...")
+		logger.Warn("🔄 Reconnecting to RabbitMQ...")
 		time.Sleep(5 * time.Second)
 
 		var err error
@@ -71,8 +76,8 @@ func (c *RabbitMQQueue) reconnect() {
 		if err == nil {
 			c.Ch, err = c.Conn.Channel()
 			if err == nil {
-				log.Println("✅ Reconnected to RabbitMQ")
-				c.OrderBook = orderbook.NewOrderBook(c.Ch, "trade_queue", "price_queue", "orderBook_queue")
+				logger.Info("✅ Reconnected to RabbitMQ")
+				c.Exchange = exchange.NewExchange(c.Ch, "trade_queue", "price_queue", "orderBook_queue")
 				c.Consume()
 				return
 			}
@@ -92,35 +97,66 @@ func (c *RabbitMQQueue) Consume() {
 		nil,
 	)
 	if err != nil {
-		log.Fatalf("❌ Failed to register a consumer: %v", err)
+		logger.Fatal("❌ Failed to register a consumer", "error", err)
 	}
 
-	log.Printf("📥 Consuming messages from queue: %s", c.Queue)
+	logger.Info("📥 Consuming messages", "queue", c.Queue)
 
 	for msg := range msgs {
 		c.processMessage(msg)
 	}
 }
 
-// processMessage handles incoming messages and updates OrderBook
 func (c *RabbitMQQueue) processMessage(msg amqp.Delivery) {
-	var orderMsg OrderMessage
+	var orderMsg EventMessage
 	if err := json.Unmarshal(msg.Body, &orderMsg); err != nil {
-		log.Printf("❌ Failed to parse message: %v", err)
+		logger.Error("❌ Failed to parse message", "error", err)
 		msg.Nack(false, false) // Reject message
 		return
 	}
 
-	log.Printf("📦 Order Processed: %+v", orderMsg.Order)
+	// Convert string values to big.Int
+	ID := new(big.Int)
+	if err := ID.UnmarshalText([]byte(orderMsg.ID)); err != nil {
+		logger.Error("❌ Failed to convert orderMsg.ID to big.Int", "error", err, "event", orderMsg)
+		return
+	}
 
-	// Process order based on type
-	switch orderMsg.Type {
-	case "buy":
-		c.OrderBook.AddBuyOrder(&orderMsg.Order)
-	case "sell":
-		c.OrderBook.AddSellOrder(&orderMsg.Order)
+	switch orderMsg.Task {
+	case "CreateEvent":
+		logger.Info("📌 Creating event", "event_id", ID.String())
+		c.Exchange.AddEvent(ID)
+
+	case "Settlement":
+		logger.Info("💰 Processing settlement", "event_id", ID.String())
+		c.Exchange.Settlement(ID)
+
+	case "Order":
+		orderID := new(big.Int)
+		if err := orderID.UnmarshalText([]byte(orderMsg.OrderID)); err != nil {
+			logger.Error("❌ Failed to convert orderMsg.OrderID to big.Int", "error", err, "event", orderMsg)
+			return
+		}
+
+		OrderUserID := new(big.Int)
+		if err := OrderUserID.UnmarshalText([]byte(orderMsg.OrderUserID)); err != nil {
+			logger.Error("❌ Failed to convert orderMsg.OrderUserID to big.Int", "error", err, "event", orderMsg)
+			return
+		}
+
+		switch orderMsg.Type {
+		case "BUY":
+			c.Exchange.AddBuyOrder(ID, orderID, orderMsg.OrderPrice, orderMsg.OrderQuantity, OrderUserID)
+		case "SELL":
+			c.Exchange.AddSellOrder(ID, orderID, orderMsg.OrderPrice, orderMsg.OrderQuantity, OrderUserID)
+		default:
+			logger.Warn("⚠️ Unknown order type", "order_type", orderMsg.Type)
+			msg.Nack(false, false)
+			return
+		}
+
 	default:
-		log.Printf("⚠️ Unknown order type: %s", orderMsg.Type)
+		logger.Warn("⚠️ Unknown task type", "task_type", orderMsg.Task)
 		msg.Nack(false, false)
 		return
 	}

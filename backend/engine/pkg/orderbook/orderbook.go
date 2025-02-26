@@ -4,17 +4,18 @@ package orderbook
 import (
 	"container/heap"
 	"dummyengine/pkg/customheap"
+	"dummyengine/pkg/logger"
 	"dummyengine/pkg/pricelevel"
 	"dummyengine/pkg/uniqueid"
 	"encoding/json"
 	"fmt"
 	"github.com/streadway/amqp"
-	"log"
 	"math/big"
 	"time"
 )
 
 type OrderBook struct {
+	EventID        *big.Int
 	BuyOrders      *customheap.BuyOrderBook
 	SellOrders     *customheap.SellOrderBook
 	Ch             *amqp.Channel
@@ -26,6 +27,7 @@ type OrderBook struct {
 type TradeMessage struct {
 	ID        *big.Int `json:"id"`
 	OrderID   *big.Int `json:"order_id"`
+	UserID    *big.Int `json:"user_id"`
 	Price     int      `json:"price"`
 	Quantity  int      `json:"quantity"`
 	Timestamp int64    `json:"timestamp"`
@@ -35,13 +37,14 @@ type PriceUpdate struct {
 	Price int `json:"price"`
 }
 
-func NewOrderBook(ch *amqp.Channel, tradeQueue, priceQueue, orderBookQueue string) *OrderBook {
+func NewOrderBook(ch *amqp.Channel, eventID *big.Int, tradeQueue, priceQueue, orderBookQueue string) *OrderBook {
 	buyHeap := &customheap.BuyOrderBook{}
 	sellHeap := &customheap.SellOrderBook{}
 	heap.Init(buyHeap)
 	heap.Init(sellHeap)
 
 	return &OrderBook{
+		EventID:        eventID,
 		BuyOrders:      buyHeap,
 		SellOrders:     sellHeap,
 		Ch:             ch,
@@ -51,7 +54,14 @@ func NewOrderBook(ch *amqp.Channel, tradeQueue, priceQueue, orderBookQueue strin
 	}
 }
 
-func (ob *OrderBook) AddBuyOrder(order *pricelevel.Order) {
+func (ob *OrderBook) AddBuyOrder(orderID *big.Int, orderPrice int, orderQuantity int, orderUserID *big.Int) {
+	order := &pricelevel.Order{
+		ID:       orderID,
+		Price:    orderPrice,
+		Quantity: orderQuantity,
+		UserID:   orderUserID,
+	}
+
 	for _, level := range ob.BuyOrders.CommonHeap {
 		if level.Price == order.Price {
 			level.Orders = append(level.Orders, order)
@@ -76,7 +86,14 @@ func (ob *OrderBook) AddBuyOrder(order *pricelevel.Order) {
 	ob.publishOrderBook()
 }
 
-func (ob *OrderBook) AddSellOrder(order *pricelevel.Order) {
+func (ob *OrderBook) AddSellOrder(orderID *big.Int, orderPrice int, orderQuantity int, orderUserID *big.Int) {
+	order := &pricelevel.Order{
+		ID:       orderID,
+		Price:    orderPrice,
+		Quantity: orderQuantity,
+		UserID:   orderUserID,
+	}
+
 	for _, level := range ob.SellOrders.CommonHeap {
 		if level.Price == order.Price {
 			level.Orders = append(level.Orders, order)
@@ -163,10 +180,17 @@ func (ob *OrderBook) MatchOrders() {
 			sellOrder := topSell.Orders[0]
 
 			matchQty := min(buyOrder.Quantity, sellOrder.Quantity)
-			fmt.Printf("Matched Order: Price %v, Quantity %v Buyer: %v Seller: %v\n", topSell.Price, matchQty, buyOrder.ID, sellOrder.ID)
+
+			logger.Info("🚀 Matched Order",
+				"price", topSell.Price,
+				"quantity", matchQty,
+				"buyer", buyOrder.UserID,
+				"seller", sellOrder.UserID)
+
 			buyerSideTrade := TradeMessage{
 				ID:        uniqueid.GenerateBaseId(),
 				OrderID:   buyOrder.ID,
+				UserID:    buyOrder.UserID,
 				Price:     topSell.Price,
 				Quantity:  matchQty,
 				Timestamp: time.Now().Unix(),
@@ -176,6 +200,7 @@ func (ob *OrderBook) MatchOrders() {
 			sellerSideTrade := TradeMessage{
 				ID:        uniqueid.GenerateBaseId(),
 				OrderID:   sellOrder.ID,
+				UserID:    sellOrder.UserID,
 				Price:     topSell.Price,
 				Quantity:  matchQty,
 				Timestamp: time.Now().Unix(),
@@ -212,13 +237,13 @@ func (ob *OrderBook) MatchOrders() {
 
 func (ob *OrderBook) PublishMessage(exchange, routingKey string, message interface{}) {
 	if ob.Ch == nil {
-		log.Printf("❌ RabbitMQ channel not initialized. Cannot publish.")
+		logger.Error("❌ RabbitMQ channel not initialized. Cannot publish.")
 		return
 	}
 
 	body, err := json.Marshal(message)
 	if err != nil {
-		log.Printf("❌ Failed to marshal message: %v", err)
+		logger.Error("❌ Failed to marshal message", "error", err)
 		return
 	}
 
@@ -234,11 +259,17 @@ func (ob *OrderBook) PublishMessage(exchange, routingKey string, message interfa
 		},
 	)
 	if err != nil {
-		log.Printf("❌ Failed to publish message to %s with key '%s': %v", exchange, routingKey, err)
+		logger.Error("❌ Failed to publish message",
+			"exchange", exchange,
+			"routing_key", routingKey,
+			"error", err)
 		return
 	}
 
-	log.Printf("📤 Published event to %s with key '%s': %v", exchange, routingKey, message)
+	logger.Info("📤 Published event",
+		"exchange", exchange,
+		"routing_key", routingKey,
+		"message", message)
 }
 
 func (ob *OrderBook) publishOrderBook() {

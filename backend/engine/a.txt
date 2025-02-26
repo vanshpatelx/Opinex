@@ -52,7 +52,7 @@ Order Match
 RabbitMQ Order Taken
 Order Price Send
 Order Book Send
-- Design for multiple events / Exchange top class
+Design for multiple events / Exchange top class
 - WALocking Recovery and logs
 
 
@@ -101,3 +101,48 @@ type Order{
 
 }
 
+
+How to implement ?
+- Create empty Exchange
+- start consuming but when received event like create event then add Exchange
+- also make dummy function for settlements
+
+Event Design
+EventMessage{
+    Task: "Order" || "CreateEvent" || "Settlement"
+    Order: pricelevel.Order
+    ID: bigint
+}
+
+
+EventMessage{
+    Task: "String"
+    ID: EventID : string to bigint
+    OrderID: OrderID : string to bigint
+    OrderPrice: Amount : int
+    OrderUserID: ID, : string to bigint
+    OrderQuantity: Quantity : int
+    Type: type "BUY || SELL"
+}
+
+type EventMessage struct {
+	Task          string `json:"task"`    // "Order" || "CreateEvent" || "Settlement"
+	ID            string `json:"eventId"` // EventID
+	OrderID       string `json:"orderId"` // OrderID
+	OrderPrice    string `json:"price"` // OrderID
+	OrderUserID   string `json:"userId"` // OrderID
+	OrderQuantity string `json:"quantity"` // OrderID
+	Type          string `json:"type"`    // "BUY" || "SELL"
+}
+
+
+task
+empty exchange
+Switch and format rabbitMQ listens
+- Fucntions
+AddEvent
+    - Settlement
+AddBuyOrder
+AddSellOrder
+- Checking Order and Trade Send data
+- Check working code
