@@ -120,10 +120,10 @@ func main() {
 
     app.Post("/auth/login", func(c *fiber.Ctx) error {
 		// Dummy user data (in real-world, verify username & password)
-		userID := "1"
+		id := "12334512412334512412"
 		role := "admin"
 
-		token, err := middleware.GenerateJWT(userID, role)
+		token, err := middleware.GenerateJWT(id, role)
 		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
 		}

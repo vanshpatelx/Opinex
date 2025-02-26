@@ -1,3 +1,26 @@
+/***
+JWT Middleware Package
+
+Handles JWT-based authentication and token generation.
+
+Features:
+1. **JWTMiddleware**:
+   - Extracts and validates JWT tokens from requests.
+   - Verifies token signature and expiration.
+   - Attaches user information (userID, role) to request context.
+
+2. **GenerateJWT**:
+   - Generates JWT tokens for authentication.
+   - Includes userID, role, and expiration claims.
+
+Security Considerations:
+- The secret key should be stored securely (e.g., environment variables).
+- The token should use proper expiration policies.
+
+Author: Vansh Patel (remotevansh@gmail.com)
+Last Updated: February 26, 2025
+***/
+
 package middleware
 
 import (
@@ -19,7 +42,24 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// JWTMiddleware validates the JWT token
+/***
+ JWTMiddleware validates the JWT token from the Authorization header.
+
+Steps:
+1. Check for the presence of the Authorization header.
+2. Extract the token from the "Bearer <token>" format.
+3. Parse and validate the JWT token signature.
+4. Check token expiration and validity.
+5. Extract claims (userID, role) and store them in request context.
+6. Proceed with the request if validation is successful.
+
+Returns:
+- 401 Unauthorized if token is missing, invalid, or expired.
+- Calls next handler if the token is valid.
+
+Last Updated: February 26, 2025
+***/
+
 func JWTMiddleware(c *fiber.Ctx) error {
 	authHeader := c.Get("Authorization")
 
