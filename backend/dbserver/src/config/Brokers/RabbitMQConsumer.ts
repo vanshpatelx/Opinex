@@ -1,3 +1,32 @@
+// src/config/Brokers/RabbitMQConsumer.ts
+/**
+    RabbitMQ Consumer
+
+    Implements a RabbitMQ message consumer with automatic reconnection.
+
+    Features:
+    - Connects to RabbitMQ and initializes a channel for consuming messages.
+    - Handles automatic reconnection on failures.
+    - Supports message consumption from multiple queues.
+    - Routes messages to appropriate handlers based on the queue name.
+
+    Message Handling:
+    - `auth_queue` → Calls `registerUser` for user registration events.
+    - `queue_2` → Logs and processes messages for Queue 2.
+    - `queue_3` → Logs and processes messages for Queue 3.
+    - Default → Logs a warning for unrecognized queues.
+
+    Dependencies:
+    - amqplib (RabbitMQ client)
+    - Logger for structured logging
+    - Auth controller for handling user registration events
+
+    Author: Vansh Patel (remotevansh@gmail.com)  
+    Date: February 10, 2025  
+ */
+
+
+
 import amqp, { Connection, Channel, ConsumeMessage } from "amqplib";
 import { config } from "../config";
 import { logger } from "../../utils/logger";
@@ -88,9 +117,9 @@ class RabbitMQConsumer {
 
     private processMessage(msg: ConsumeMessage): void {
         switch (this.queue) {
-            case "auth_registered_queue":
+            case "auth_queue":
                 registerUser(msg);
-                console.log("Processing auth_registered_queue message:", msg.content.toString());
+                console.log("Processing auth_queue message:", msg.content.toString());
                 break;
             case "queue_2":
                 console.log("Processing queue_2 message:", msg.content.toString());
