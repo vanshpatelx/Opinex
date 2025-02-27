@@ -1,29 +1,34 @@
-import * as os from 'os';
-
+// src/utils/id.ts
 /**
- * Generates a unique 20-character identifier.
- * 
- * The ID is composed of three parts:
- * 1. A 4-digit segment derived from the system's hostname. Non-digit characters are removed, and the result is zero-padded to 4 digits.
- * 2. A 13-digit timestamp representing the current time in milliseconds since the Unix epoch.
- * 3. A 3-digit counter value that increments with each call and wraps around after reaching 999.
- * 
- * @returns {bigint} - A unique identifier as a BigInt.
+    Unique ID Generator
+
+    Generates a unique 16-character identifier using:
+    - 2-digit system hostname-derived segment.
+    - 10-digit Unix timestamp in seconds.
+    - 4-digit auto-incrementing counter.
+
+    Features:
+    - Ensures uniqueness across calls by combining hostname, timestamp, and a counter.
+    - Uses BigInt to handle large numeric identifiers.
+
+    Dependencies:
+    - os (System hostname access)
+
+    Author: Vansh Patel (remotevansh@gmail.com)  
+    Date: February 27, 2025  
  */
 
-let counter = 0;
-function generateUniqueId(): bigint {
-  const hostname = os.hostname().replace(/\D/g, '').slice(0, 4) || '1234';
-  const timestamp = Date.now();
-  const counterValue = (++counter % 1000);  // range [0, 1000]
-  
-  const uniqueIdString = 
-    timestamp.toString() +    // timestaps milliseconds
-    counterValue.toString().padStart(3, '0')
-    hostname.padStart(4, '0');
+import * as os from 'os';
 
-  const uniqueId = BigInt(uniqueIdString);
-  return uniqueId;
+let counter = 0;
+
+function generateUniqueId(): bigint {
+  const timestamp = Math.floor(Date.now() / 1000); // 10-digit timestamp (seconds)
+  const counterValue = (++counter % 10000).toString().padStart(4, '0'); // 4-digit counter
+  const hostnamePart = os.hostname().replace(/\D/g, '').slice(0, 2) || '12'; // 2-digit hostname
+
+  const uniqueIdString = `${timestamp}${counterValue}${hostnamePart}`; // 16-digit ID
+  return BigInt(uniqueIdString);
 }
 
-export {generateUniqueId};
+export { generateUniqueId };

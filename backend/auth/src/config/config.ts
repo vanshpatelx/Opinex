@@ -1,4 +1,24 @@
-// storing variables centrally
+// src/config/config.ts
+/**
+    Configuration Variables
+
+    Centralized storage for environment variables.  
+    Loads values from `.env` using `dotenv` for consistency across services.
+
+    Configurations:
+    - Redis → Host, port, and password.
+    - JWT → Secret key for authentication.
+    - PostgreSQL → Database credentials.
+    - Server → Application port.
+    - RabbitMQ → Broker credentials, connection URL, and exchanges.
+
+    Dependencies:
+    - dotenv → Loads environment variables from `.env`.
+
+    Author: Vansh Patel (remotevansh@gmail.com)  
+    Date: February 2, 2025  
+ */
+
 import dotenv from "dotenv";
 
 dotenv.config();

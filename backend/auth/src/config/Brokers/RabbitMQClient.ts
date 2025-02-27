@@ -1,3 +1,23 @@
+// src/config/Brokers/RabbitMQClient.ts
+/**
+    RabbitMQ Client
+
+    Implements a singleton RabbitMQ client for message publishing.
+
+    Features:
+    - Connects to RabbitMQ and initializes a channel.
+    - Handles automatic reconnection on failures.
+    - Supports publishing events to exchanges.
+    - Includes a `registerUser` method to send user registration events.
+
+    Dependencies:
+    - amqplib (RabbitMQ client)
+    - Logger for structured logging
+
+    Author: Vansh Patel (remotevansh@gmail.com)  
+    Date: February 2, 2025  
+ */
+
 import amqp, { Connection, Channel } from "amqplib";
 import { config } from "../config";
 import { logger } from "../../utils/logger";

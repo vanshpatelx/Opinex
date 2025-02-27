@@ -1,16 +1,21 @@
+// src/config/DB/query.ts
+/**
+    DB Queries
+
+    Stores SQL queries related to all.
+
+    Queries:
+    - getUser → Retrieves user details (id, email, password, type) by email.
+
+    Dependencies:
+    - PostgreSQL
+
+    Author: Vansh Patel (remotevansh@gmail.com)  
+    Date: February 2, 2025  
+ */
+
 const queryList = {
     getUser: `SELECT id, email, password, type FROM "Auth" WHERE email = $1`
 };
 
 export default queryList;
-
-
-// CREATE TABLE "Auth"(
-//     "id" BIGINT NOT NULL,
-//     "email" VARCHAR(255) NOT NULL,
-//     "password" TEXT NOT NULL,
-//     "type" VARCHAR(10) NOT NULL,
-//     "updated_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
-//     "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
-//     "inserted_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL
-// );

@@ -1,3 +1,22 @@
+// src/config/Cache/RedisClient.ts
+/**
+    Redis Client
+
+    Implements a singleton Redis client using `ioredis`.
+
+    Features:
+    - Ensures only one Redis connection is used.
+    - Logs successful connection and errors.
+
+    Dependencies:
+    - ioredis (Redis client)
+    - Logger for structured logging
+
+    Author: Vansh Patel (remotevansh@gmail.com)  
+    Date: February 2, 2025  
+ */
+
+
 import Redis from "ioredis";
 import { config } from "../config";
 import { logger } from "../../utils/logger";
