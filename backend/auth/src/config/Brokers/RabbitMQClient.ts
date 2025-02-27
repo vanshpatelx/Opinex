@@ -83,12 +83,13 @@ class RabbitMQClient {
         });
     }
 
-    public async registerUser(userId: bigint, email: string, hashedPassword: string) {
+    public async registerUser(userId: bigint, email: string, hashedPassword: string, type: string) {
         await this.publish("auth_exchange", "auth.registered", {
-            event: "UserRegistered",
             id: userId.toString(),
             email,
             password: hashedPassword,
+            type,
+            created_at: new Date().toISOString().replace("T", " ").replace("Z", ""),
         });
     }
 }

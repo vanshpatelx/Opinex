@@ -13,12 +13,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/auth", authRoutes);
 
-app.get("/auth", (req: Request, res: Response) => {
-    res.send("🚀 🚀 Auth Server");
-});
-
 app.get('/auth/health', (req: Request, res: Response) => {
-  res.status(200).json({ success: true, message: "server is running." });
+  res.status(200).json({ success: true, message: "🚀 🚀 server is running." });
 });
 
 async function startServer() {

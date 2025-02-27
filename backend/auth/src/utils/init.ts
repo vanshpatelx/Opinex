@@ -1,8 +1,35 @@
+// src/utils/init.ts
+/**
+    Service Health Checker
+
+    This module checks the readiness of essential services:
+    - PostgreSQL Database  
+    - Redis Cache  
+    - RabbitMQ Message Broker  
+
+    The system retries failed connections up to 5 times with a delay before exiting.  
+
+    Author: Vansh Patel (remotevansh@gmail.com)  
+    Last Updated Date: February 2, 2025  
+ */  
+
+
 import { postgresClient } from "../config/DB/db";
 import { redisClient } from "../config/Cache/RedisClient";
 import { logger } from "./logger";
 import amqp from "amqplib";
 import { config } from "../config/config";
+
+
+/**
+    PostgreSQL Readiness Check
+
+    Executes a simple query to verify if the PostgreSQL database is available.  
+    Logs an error if the database is not accessible.
+
+    Returns:
+    - Promise<boolean> → Resolves to true if PostgreSQL is ready, otherwise false.  
+ */  
 
 async function checkPostgresConnection(): Promise<boolean> {
     return new Promise((resolve) => {
@@ -18,6 +45,17 @@ async function checkPostgresConnection(): Promise<boolean> {
     });
 }
 
+
+/**
+    Redis Readiness Check
+
+    Sends a PING command to verify if the Redis cache is available.  
+    Logs an error if Redis is not accessible.
+
+    Returns:
+    - Promise<boolean> → Resolves to true if Redis is ready, otherwise false.  
+ */  
+
 async function checkRedisConnection(): Promise<boolean> {
     return new Promise((resolve) => {
         redisClient.ping((err, result) => {
@@ -32,6 +70,17 @@ async function checkRedisConnection(): Promise<boolean> {
     });
 }
 
+
+/**
+    RabbitMQ Readiness Check
+
+    Establishes a temporary connection to verify if RabbitMQ is available.  
+    Logs an error if RabbitMQ is not accessible.
+
+    Returns:
+    - Promise<boolean> → Resolves to true if RabbitMQ is ready, otherwise false.  
+ */  
+
 async function checkRabbitMQConnection(): Promise<boolean> {
     try {
         const connection = await amqp.connect(config.rabbitmq.url);
@@ -43,6 +92,15 @@ async function checkRabbitMQConnection(): Promise<boolean> {
         return false;
     }
 }
+
+
+/**
+    Service Initialization
+
+    Initializes required services: PostgreSQL, Redis, and RabbitMQ.  
+    Retries up to 5 times with a 5-second delay if any service is not ready.  
+    Logs success if all services are ready, otherwise throws an error.  
+ */  
 
 export async function initServices() {
     let retries = 5;
