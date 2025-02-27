@@ -1,0 +1,72 @@
+Holding Server
+- CRUD with redis and DB
+
+=> Holdings
+Fun
+holding by userID
+balance by userID
+
+Holding:UserID:UserID
+Holding:UserID:*
+
+Balance:UserID
+
+
+Code Setups
+Cache
+DB
+Test it
+Routers
+Middleware
+- Controllers
+- utils when needed
+
+
+logics
+// getBalanceByID
+// check same as local and request if role is normal user
+// check in Cache
+// and check in DB
+
+curl -X GET http://localhost:3005/holdings/balance/1 \
+     -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc0MDY1NzI5NX0.mgFGqvCYV_xFsEmSz0qXVLBK-7ODKSUz2XMMZVmUPvs"
+
+curl -X GET "http://localhost:3005/holdings/1" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMSIsInJvbGUiOiJhZG1pbiIsImV4cCI6MTc0MDY1NzI5NX0.mgFGqvCYV_xFsEmSz0qXVLBK-7ODKSUz2XMMZVmUPvs"
+
+
+
+
+
+
+Holding:UserID:UserID
+
+[{
+    "eventID": "1",
+    "price": "100",
+    "quantity": ""
+    "locked": ""
+},{
+      "eventID": "1",
+    "price": "100",
+    "quantity": ""
+    "locked": ""
+}]
+
+
+
+Trade Server
+Endpoints:
+- **GET /trade/{tradeID}** → Retrieve a specific trade by its ID.
+- **GET /trade/user/{userID}** → Retrieve all trades for a user (supports cursor and limit).
+- **GET /trade/event/{eventID}** → Retrieve all trades for a specific event (supports cursor and limit).
+- **GET /trade** → Retrieve trades filtered by eventID and userID (supports cursor and limit, requires query params).
+
+Trade:
+id: bigint
+order_id: bigint
+user_id: bigint
+price: int
+quantity: int
+created_at: timestamp
+inserted_at: timestamp
+
