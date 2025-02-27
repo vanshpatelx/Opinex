@@ -1,0 +1,222 @@
+Order Server
+- Receiving order by endpoints
+- Send order to Queue for matching engine an also for DbServers
+- Store in redis too
+- Order Status or related endpoint
+- Order Details All
+- Orders by users
+- All orders for admin or data analysis
+- single order deatils
+- Orders for specific event or related
+
+
+endpoints
+- Create order
+- Orderby orderID
+- Order by eventID
+- Order by UserID
+
+
+Trade engine (base form)
+{
+    type:  "Buy" or "Sell"
+    order:  {
+        OrderID:
+        price:
+        Qty:
+    }
+}
+
+Orders looks like
+- OrderID
+- EventID
+- Type (Buy | Sell)
+- Opt (Yes | No)
+- Price
+- Qty
+- UserID
+- Status
+- TimeStamp
+
+
+
+Create order
+- jwt validations
+- zod validations
+- Orders send to DbServers by pubsub
+- Convert to base form for trade engine
+- Orders send to trading engine  by pubsub
+
+
+Orderby OrderID
+- jwt validations
+- zod validations
+- Orders Detatils from cache
+- Orders Detatils from DB and add to cache
+
+
+Order by eventID
+- jwt validations
+- zod validations
+- Orders Detatils from cache
+- Orders Detatils from DB and add to cache
+
+Order by UserID
+- jwt validations
+- zod validations
+- Orders Detatils from cache
+- Orders Detatils from DB and add to cache
+
+
+
+
+Task
+- OrderCreate
+    ✅ pubsub done
+    ✅ model done
+    ✅ config data from Envs
+    ✅ jwt middleware
+    ✅  init functions
+    ✅ routes
+    ✅ controllers check
+    ✅ and test endpoint
+    ✅ and then solve errors
+    ✅ setup best main functions
+
+✅Query settlements
+✅ Orderby orderID
+✅ Order by eventID
+✅ Order by UserID
+
+
+Order by eventID
+- Check in redis
+
+logic
+# normal logic
+- We store in redis like: Events:{EventID}
+
+
+
+✅ Orderby orderID => Normal
+
+
+✅ Order by eventID => User => Implement cursor
+✅ Order by UserID => User => Implement cursor
+
+
+Divide into two functions based on Role
+=> Order by EventID => Admin Focused
+=> Order by EventID => User Focused
+
+User Focused
+-> We use cursor and offset based system, give last recent items
+-> Store in Cache But how ?
+
+=> Store in cache for small amount of times like 10 sec - 20 sec max
+
+# controllers
+Admin Focused
+=> Check in cache, with offset and  orders:Event${eventID}:${cursor}:${limit}
+=> we are storing first page as cursor = 0
+=> otherwise we take cursor as TimeStamp
+=> DBQuery
+=> Add to cache
+
+User Focused
+=> Check in cache, with offset and orders:Event${eventID}:{userID}:${cursor}:${limit}
+=> we are storing first page as cursor = 0
+=> otherwise we take cursor as TimeStamp
+=> DBQuery : includes userID so we only got userID related orders means order by that specific person
+=> Add to cache
+
+
+
+Order by UserID
+=> Order by UserID => Admin Focused
+=> Order by UserID => User Focused
+
+# controllers
+Admin Focused
+=> Check in cache, with offset and  orders:User{UserID}:${cursor}:${limit}
+=> we are storing first page as cursor = 0
+=> otherwise we take cursor as TimeStamp
+=> DBQuery
+=> Add to cache
+
+User Focused
+=> Check in cache, with offset and orders:Event${eventID}:{userID}:${cursor}:${limit}
+=> we are storing first page as cursor = 0
+=> otherwise we take cursor as TimeStamp
+=> DBQuery : includes userID so we only got userID related orders means order by that specific person
+=> Add to cache
+
+
+order:{orderID} : store whole order
+order:{orderID}:UserID : return userID
+orders:Event{eventID}:{cursor}:{limit} : admin : return list of orders
+orders:Event{eventID}:{user.UserID}:{cursor}:{limit} : user : return list of orders
+orders:User{userID}:{cursor}:{limit} : admin + user : return list of orders
+
+
+
+
+
+
+
+Event Server
+- Event CRUD
+- Redis, Connect to EventExchange (DB Server and OrderServer)
+- Settlement trigger => SettlementExchange
+
+Events
+=> Create Event (admin)
+=> Get All Live Event (user, admin)
+=> Get Event by eventID (user, admin)
+=> Settlement Event by eventID (admin)
+
+Store:
+event:{eventID}
+
+// logic
+- Create Event
+=> Check user is admin or not
+=> Generate Event ID
+=> Store in cache and publish to DbServers
+=> Send to All pubsub network where needed
+
+
+Get All Live Event
+=> Check in cache
+=> If found, return cached data
+=> Query database for live events
+=> Convert event fields to proper format
+=> Store fetched events in cache
+=> Return processed event list
+
+Get Event by eventID
+=> Check in cache
+=> If found, return cached data
+=> Query database for event by eventID
+=> Convert event fields to proper format
+=> Store fetched event in cache
+
+Settlement Event by eventID
+=> Check user is admin or not
+=> Check in cache or DB
+=> If found, Send to Settlement Exchange for settlements
+=> Order Server too, for not accept orders for that event
+=> Return event details
+
+class Event(BaseModel):
+    id: int
+    name: str
+    details: str
+    status: Literal["RUNNING", "CLOSED", "SETTLEMENT", "PROCESSED"])
+    settlement_time: datetime
+    updated_at: datetime
+    created_at: datetime
+
+
+
+✅ Settlemnt Server logic change
