@@ -12,7 +12,7 @@
 
     Message Handling:
     - `auth_queue` → Calls `registerUser` for user registration events.
-    - `queue_2` → Logs and processes messages for Queue 2.
+    - `event_queue` → Calls `registerEvent` for user registration events
     - `queue_3` → Logs and processes messages for Queue 3.
     - Default → Logs a warning for unrecognized queues.
 
@@ -22,7 +22,7 @@
     - Auth controller for handling user registration events
 
     Author: Vansh Patel (remotevansh@gmail.com)  
-    Date: February 10, 2025  
+    Date: February 28, 2025  
  */
 
 
@@ -31,6 +31,7 @@ import amqp, { Connection, Channel, ConsumeMessage } from "amqplib";
 import { config } from "../config";
 import { logger } from "../../utils/logger";
 import { registerUser } from "../../controllers/auth";
+import { registerEvent } from "../../controllers/event";
 
 class RabbitMQConsumer {
     private connection: Connection | null = null;
@@ -119,10 +120,11 @@ class RabbitMQConsumer {
         switch (this.queue) {
             case "auth_queue":
                 registerUser(msg);
-                console.log("Processing auth_queue message:", msg.content.toString());
+                // console.log("Processing auth_queue message:", msg.content.toString());
                 break;
-            case "queue_2":
-                console.log("Processing queue_2 message:", msg.content.toString());
+            case "event_queue":
+                registerEvent(msg);
+                // console.log("Processing queue_2 message:", msg.content.toString());
                 break;
             case "queue_3":
                 console.log("Processing queue_3 message:", msg.content.toString());

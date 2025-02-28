@@ -1,6 +1,6 @@
-// src/config/DB/DBUser.ts
+// src/config/DB/DBEvent.ts
 /**
-    PostgreSQL Client (User Database)
+    PostgreSQL Client (Event Database)
 
     Implements a singleton PostgreSQL client using the `pg` library.
 
@@ -23,29 +23,29 @@ import { Pool } from "pg";
 import { config } from "../config";
 import { logger } from "../../utils/logger";
 
-class PostgresClientUser {
+class PostgresClientEvent {
     private static instance: Pool | null = null;
 
     private constructor() {}
 
     public static getInstance(): Pool {
-        if (!PostgresClientUser.instance) {
-            PostgresClientUser.instance = new Pool({
-                host: config.dbUser.host,
-                port: config.dbUser.port,
-                user: config.dbUser.user,
-                password: config.dbUser.password,
-                database: config.dbUser.database,
+        if (!PostgresClientEvent.instance) {
+            PostgresClientEvent.instance = new Pool({
+                host: config.dbEvent.host,
+                port: config.dbEvent.port,
+                user: config.dbEvent.user,
+                password: config.dbEvent.password,
+                database: config.dbEvent.database,
             });
             
-            PostgresClientUser.instance.on("connect", () => {
+            PostgresClientEvent.instance.on("connect", () => {
                 logger.info({
-                    message: `Connected to PostgreSQL at ${config.dbUser.host}:${config.dbUser.port}`,
+                    message: `Connected to PostgreSQL at ${config.dbEvent.host}:${config.dbEvent.port}`,
                     service: "postgres",
                 });
             });
 
-            PostgresClientUser.instance.on("error", (error) => {
+            PostgresClientEvent.instance.on("error", (error) => {
                 logger.error({
                     message: "PostgreSQL connection error",
                     service: "postgres",
@@ -54,9 +54,9 @@ class PostgresClientUser {
             });
 
         }
-        return PostgresClientUser.instance;
+        return PostgresClientEvent.instance;
     }
 }
 
-const postgresClientUser = PostgresClientUser.getInstance();
-export { postgresClientUser };
+const postgresClientEvent = PostgresClientEvent.getInstance();
+export { postgresClientEvent };

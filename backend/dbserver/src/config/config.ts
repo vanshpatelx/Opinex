@@ -23,12 +23,19 @@
     
     export const config = {
         port: Number(process.env.PORT) || 5003,
-        dbUser: {
+        dbAuth: {
             user: process.env.AUTH_DB_USER || "default_user",
             host: process.env.AUTH_DB_HOST || "localhost",
             database: process.env.AUTH_DB_NAME || "auth_db",
             password: process.env.AUTH_DB_PASSWORD || "password",
             port: Number(process.env.AUTH_DB_PORT) || 5432,
+        },
+        dbEvent: {
+            user: process.env.EVENT_DB_USER || "default_user",
+            host: process.env.EVENT_DB_HOST || "localhost",
+            database: process.env.EVENT_DB_NAME || "auth_db",
+            password: process.env.EVENT_DB_PASSWORD || "password",
+            port: Number(process.env.EVENT_DB_PORT) || 5432,
         },
         rabbitmq: {
             user: process.env.RABBITMQ_USER || "admin",
@@ -55,6 +62,13 @@
             DB_NAME: process.env.AUTH_DB_NAME || "not set",
             DB_PASSWORD: process.env.AUTH_DB_PASSWORD ? "******" : "not set",
             DB_PORT: process.env.AUTH_DB_PORT || "not set",
+        });
+        console.log("🔹 EVENT DATABASE CONFIGURATION:", {
+            DB_USER: process.env.EVENT_DB_USER || "not set",
+            DB_HOST: process.env.EVENT_DB_HOST || "not set",
+            DB_NAME: process.env.EVENT_DB_NAME || "not set",
+            DB_PASSWORD: process.env.EVENT_DB_PASSWORD ? "******" : "not set",
+            DB_PORT: process.env.EVENT_DB_PORT || "not set",
         });
         
         console.log("🔹 SERVER PORT:", { PORT: process.env.PORT || "5003" });

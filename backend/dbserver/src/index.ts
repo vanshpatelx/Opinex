@@ -17,7 +17,7 @@ app.get('/dbserver/health', (req: Request, res: Response) => {
 });
 
 async function startConsumers() {
-    const queues = ["auth_queue"];
+    const queues = ["auth_queue", "event_queue"];
 
     for (const queue of queues) {
         const consumer = new RabbitMQConsumer(queue);

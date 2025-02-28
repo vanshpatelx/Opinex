@@ -17,8 +17,9 @@
     Date: 10 Feb 25  
  */
 
-    
-import { postgresClientUser } from "../config/DB/DBUser";
+
+import { postgresClientAuth } from "../config/DB/DBAuth";
+import { postgresClientEvent } from "../config/DB/DBEvent";
 import { logger } from "./logger";
 
 
@@ -30,20 +31,41 @@ import { logger } from "./logger";
 
     Returns:
     - Promise<boolean> → Resolves to true if PostgreSQL is ready, otherwise false.  
- */  
+ */
 async function checkPostgresConnection(): Promise<boolean> {
-    return new Promise((resolve) => {
-        postgresClientUser.query("SELECT 1", (err) => {
-            if (err) {
-                logger.error("PostgreSQL is not ready:", err.message);
-                resolve(false);
-            } else {
-                logger.info("PostgreSQL is ready.");
-                resolve(true);
-            }
-        });
-    });
+    try {
+        const results = await Promise.all([
+            new Promise<boolean>((resolve) => {
+                postgresClientAuth.query("SELECT 1", (err) => {
+                    if (err) {
+                        logger.error("PostgreSQL (Auth) is not ready:", err.message);
+                        resolve(false);
+                    } else {
+                        logger.info("PostgreSQL (Auth) is ready.");
+                        resolve(true);
+                    }
+                });
+            }),
+            new Promise<boolean>((resolve) => {
+                postgresClientEvent.query("SELECT 1", (err) => {
+                    if (err) {
+                        logger.error("PostgreSQL (Event) is not ready:", err.message);
+                        resolve(false);
+                    } else {
+                        logger.info("PostgreSQL (Event) is ready.");
+                        resolve(true);
+                    }
+                });
+            }),
+        ]);
+
+        return results.every((res) => res); // Returns true only if both connections are successful
+    } catch (error) {
+        logger.error("Unexpected error checking PostgreSQL connections:", error);
+        return false;
+    }
 }
+
 
 
 /**
@@ -52,7 +74,7 @@ async function checkPostgresConnection(): Promise<boolean> {
     Initializes required services: PostgreSQL.  
     Retries up to 5 times with a 5-second delay if any service is not ready.  
     Logs success if all services are ready, otherwise throws an error.  
- */  
+ */
 export async function initServices() {
     let retries = 5;
     while (retries > 0) {

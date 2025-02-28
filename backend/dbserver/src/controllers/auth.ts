@@ -12,7 +12,7 @@
 
     Dependencies:
     - Logger for structured logging
-    - PostgreSQL client (`postgresClientUser`)
+    - PostgreSQL client (`postgresClientAuth`)
     - Query list (`queryList`)
 
     Author: Vansh Patel (remotevansh@gmail.com)  
@@ -21,7 +21,7 @@
 
 
 import { logger } from "../utils/logger";
-import { postgresClientUser } from "../config/DB/DBUser";
+import { postgresClientAuth } from "../config/DB/DBAuth";
 import queryList from "../config/DB/query";
 
 /**
@@ -44,7 +44,7 @@ export const registerUser = async (msg: any): Promise<void> => {
 
         logger.info({ message: "Auth: AddUser query received", id });
 
-        const client = await postgresClientUser.connect();
+        const client = await postgresClientAuth.connect();
         const result = await client.query(queryList.addUser, [BigInt(id), email, password, type, created_at, created_at, new Date().toISOString().replace("T", " ").replace("Z", "")]);
         client.release();
 
