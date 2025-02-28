@@ -14,10 +14,10 @@ Author: Vansh Patel (remotevansh@gmail.com)
 Last Updated: February 19, 2025
 """
 
-from utils.logger import logger
-from config.config import config
-from config.db.db import Database
-from config.cache.cache import Cache
+from src.utils.logger import logger
+from src.config.config import config
+from src.config.db.db import Database
+from src.config.cache.cache import Cache
 import aio_pika
 
 

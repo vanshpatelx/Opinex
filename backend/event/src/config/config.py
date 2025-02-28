@@ -46,6 +46,7 @@ class Config:
         self.DB_PORT = int(os.getenv("DB_PORT"))
 
         # Application port
+        print(os.getenv("PORT"))
         self.PORT = int(os.getenv("PORT"))
 
         # RabbitMQ settings

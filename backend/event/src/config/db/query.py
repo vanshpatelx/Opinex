@@ -1,33 +1,26 @@
 class Query:
     """
-    SQL queries for fetching order data.
+    SQL queries for fetching order and event data.
 
     Queries:
-        1. `get_order_by_orderID`: Fetch a specific order by its ID.
-        2. `get_order_by_eventID_pagination_admin`: Fetch paginated orders for an event (Admin).
-        3. `get_order_by_eventID_pagination_user`: Fetch paginated orders for an event (User-specific).
-        4. `get_order_by_userID_pagination`: Fetch paginated orders for a user.
+        1. `get_event`: Fetch details of a specific event by its ID.
+        2. `get_all_event`: Fetch a paginated list of running events.
 
     Notes:
         - Queries use positional parameters ($1, $2, etc.) for safe parameter substitution.
         - Results are ordered by timestamp in descending order.
 
-    Last Updated: February 19, 2025
+    Last Updated: February 28, 2025
     """
 
-    get_order_by_orderID = "SELECT * FROM orders WHERE id = $1"
-
-    get_order_by_eventID_pagination_admin = """
-    SELECT * FROM orders WHERE eventid = $1
-    ORDER BY timestamp DESC LIMIT $2 OFFSET $3
+    get_event = """
+        SELECT id, name, details, status, settlement_time 
+        FROM "Event" WHERE id = $1
     """
 
-    get_order_by_eventID_pagination_user = """
-    SELECT * FROM orders WHERE userid = $1 AND eventid = $2 
-    ORDER BY timestamp DESC LIMIT $3 OFFSET $4
-    """
-
-    get_order_by_userID_pagination = """
-    SELECT * FROM orders WHERE userid = $1
-    ORDER BY timestamp DESC LIMIT $2 OFFSET $3
+    get_all_event = """
+        SELECT id, name, details, status, settlement_time 
+        FROM "Event" WHERE status = 'RUNNING' 
+        ORDER BY created_at DESC 
+        LIMIT $1 OFFSET $2
     """

@@ -16,8 +16,8 @@ Last Updated: February 26, 2025
 
 import asyncpg
 import asyncio
-from utils.logger import logger
-from config.config import config
+from src.utils.logger import logger
+from src.config.config import config
 
 class Database:
     """Handles PostgreSQL connection pooling and queries."""

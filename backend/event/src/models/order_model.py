@@ -9,11 +9,18 @@ class Event(BaseModel):
     name: str
     details: str
     status: Literal["RUNNING", "CLOSED", "SETTLEMENT", "PROCESSED"]
-    settlement_time: datetime
-    updated_at: datetime
-    created_at: datetime
+    settlement_time: str
+    created_at: str
 
 class EventReq(BaseModel):
     name: str
     details: str
-    settlement_time: datetime
+    settlement_time: str
+
+
+class EventResponse(BaseModel):
+    id: int
+    name: str
+    details: str
+    status: Literal["RUNNING", "CLOSED", "SETTLEMENT", "PROCESSED"]
+    settlement_time: str

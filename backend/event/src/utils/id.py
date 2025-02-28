@@ -11,28 +11,30 @@ Generates unique numeric IDs based on:
 Author: Vansh Patel (remotevansh@gmail.com)
 Last Updated: February 19, 2025
 """
-
 import os
 import time
 
+counter = 0
+
 def generate_unique_id():
     """
-    Generate a globally unique numeric ID.
+    Generates a unique 16-digit identifier using:
+    - 10-digit Unix timestamp in seconds.
+    - 4-digit auto-incrementing counter.
+    - 2-digit hostname-derived segment.
 
-    - Uses the current timestamp in milliseconds.
-    - Includes a rolling counter for uniqueness.
-    - Appends a machine-specific identifier.
-    
     Returns:
-        int: A unique numeric ID.
-    
-    Last Updated: February 19, 2025
+        int: A unique 16-digit numeric ID
     """
-    hostname = ''.join(filter(str.isdigit, os.uname()[1]))[:4] or '1234'
-    timestamp = int(time.time() * 1000)
-    counter_value = generate_unique_id.counter % 1000
-    generate_unique_id.counter += 1
-    return int(f"{timestamp}{str(counter_value).zfill(3)}{hostname.zfill(4)}")
-
-# Initialize counter
-generate_unique_id.counter = 0
+    global counter
+    
+    timestamp = int(time.time())  # 10-digit Unix timestamp (seconds)
+    counter = (counter + 1) % 10000  # 4-digit counter (rolls over at 9999)
+    counter_value = str(counter).zfill(4)  # Zero-padded 4-digit counter
+    
+    hostname_digits = ''.join(filter(str.isdigit, os.uname().nodename))[:2]
+    hostname_part = hostname_digits if hostname_digits else '12'  # Default to '12' if empty
+    
+    unique_id_str = f"{timestamp}{counter_value}{hostname_part}"  # Construct the ID string
+    
+    return int(unique_id_str)  # Convert to integer for consistency

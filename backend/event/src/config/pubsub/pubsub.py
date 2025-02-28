@@ -17,8 +17,8 @@ Last Updated: February 19, 2025
 
 import aio_pika
 import asyncio
-from utils.logger import logger
-from config.config import config
+from src.utils.logger import logger
+from src.config.config import config
 
 class PubSub:
     """
@@ -94,19 +94,18 @@ class PubSub:
         
         Last Updated: February 19, 2025
         """
-        await cls.init()  # ✅ Ensure connection is initialized only if needed
+        await cls.init()  # ✅ Ensure connection is initialized
 
         try:
-            # Ensure exchange exists
-            exchange_instance = await cls.channel.declare_exchange(
-                exchange, aio_pika.ExchangeType.DIRECT, durable=True
-            )
+            # Get the existing exchange without declaring it
+            exchange_obj = await cls.channel.get_exchange(exchange)
 
             # Publish message
-            await exchange_instance.publish(
+            await exchange_obj.publish(
                 aio_pika.Message(body=str(message).encode()),
                 routing_key=routing_key
             )
+
             logger.info(f"📩 Message sent to exchange '{exchange}' with routing key '{routing_key}': {message}")
 
         except Exception as e:

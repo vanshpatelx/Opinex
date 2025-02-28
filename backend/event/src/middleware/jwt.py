@@ -18,7 +18,7 @@ import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError
 from fastapi import HTTPException, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from config.config import config  # Import JWT secret
+from src.config.config import config  # Import JWT secret
 
 # Define security scheme (Bearer token)
 security = HTTPBearer()

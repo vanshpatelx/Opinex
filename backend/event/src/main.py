@@ -1,24 +1,20 @@
 # src/main.py
 from fastapi import FastAPI
 from src.routes.event_routes import router as event_router
-from utils.logger import logger
-from utils.init import ServiceInitializer
-from config.config import config
+from src.utils.logger import logger
+from src.utils.init import ServiceInitializer
+from src.config.config import config
 import uvicorn
-from config.db.db import Database
-
+from src.config.db.db import Database
 
 app = FastAPI(title="Event API")
 
-app.include_router(event_router)
-
-@app.get("/")
-async def root():
-    return {"message": "🚀 Event Service is Running!"}
-
 @app.get("/event/health")
 async def health_check():
-    return {"success": True, "message": "Server is running."}
+    return {"success": True, "message": "🚀🚀 Event Server is running."}
+
+
+app.include_router(event_router)
 
 @app.on_event("startup")
 async def startup():
@@ -35,4 +31,5 @@ async def shutdown():
     logger.info("✅ Services cleaned up successfully.")
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=config.PORT, reload=True)
+    logger.info(f"Starting server on port {config.PORT}")  # Debugging
+    uvicorn.run("src.main:app", host="0.0.0.0", port=config.PORT, reload=False)

@@ -19,15 +19,15 @@ Related Models:
 """
 
 from fastapi import HTTPException
-from config.cache.cache import Cache
-from config.pubsub.pubsub import PubSub
-from models.order_model import EventReq, Event
-from models.auth_model import UserPayload
-from utils.id import generate_unique_id
-from utils.logger import logger
+from src.config.cache.cache import Cache
+from src.config.pubsub.pubsub import PubSub
+from src.models.order_model import EventReq, Event, EventResponse
+from src.models.auth_model import UserPayload
+from src.utils.id import generate_unique_id
+from src.utils.logger import logger
 from datetime import datetime
-from config.db.db import Database
-from config.db.query import Query
+from src.config.db.db import Database
+from src.config.db.query import Query
 import logging
 
 logger = logging.getLogger(__name__)
@@ -49,9 +49,14 @@ async def create_event(event: EventReq, user: UserPayload):
     Returns:
         dict: Event creation confirmation.
     """
-    if user.user_type != "ADMIN":
-        logger.warning(f"🚫 Unauthorized access: User {user.UserID} attempted to create an event.")
+    if user.type != "ADMIN":
+        logger.warning(f"{user.type}")
+        logger.warning(f"🚫 Unauthorized access: User {user.id} attempted to create an event.")
         raise HTTPException(status_code=401, detail="Unauthorized")
+
+    created_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+
+    logger.warn(str(event.settlement_time))
 
     event_obj = Event(
         id=generate_unique_id(),
@@ -59,8 +64,7 @@ async def create_event(event: EventReq, user: UserPayload):
         details=event.details,
         status="RUNNING",
         settlement_time=event.settlement_time,
-        updated_at=int(datetime.utcnow().timestamp()),
-        created_at=int(datetime.utcnow().timestamp()),
+        created_at=created_at,
     )
 
     event_dict = event_obj.model_dump()
@@ -68,55 +72,64 @@ async def create_event(event: EventReq, user: UserPayload):
 
     logger.info(f"📦 Final Event: {event_dict}")
 
-    await PubSub.send(event_dict, 'Order_Exchange', 'Order.add')
+    logger.info(event_dict)
+    await PubSub.send(event_dict, 'event_exchange', 'event.registered')
 
     # Minimize data before caching
     cache_event = event_dict.copy()
     cache_event.pop("updated_at", None)
     cache_event.pop("created_at", None)
+    cache_event["settlement_time"] = str(cache_event["settlement_time"])
 
-    await Cache.set(f"event:{event_obj.id}", cache_event)
+    await Cache.set(f"event:{event_obj.id}", cache_event, 72000)
     logger.info(f"📦 Cached Event: {event_obj.id}")
 
     logger.info(f"✅ Event {event_obj.id} created successfully")
     return {"message": "Event created successfully", "event_id": event_obj.id}
 
-async def get_all_event(user: UserPayload):
+async def get_all_event(cursor: int, limit: int, user: UserPayload):
     """
-    Retrieves all events.
+    Retrieves all events, checking the cache first.
 
-    Steps:
-        1. Check if events exist in cache.
-        2. If not, fetch from DB and store in cache.
-        3. Return the list of events.
-
-    Parameters:
+    Args:
+        cursor (int): Pagination cursor.
+        limit (int): Number of events to retrieve.
         user (UserPayload): User details.
 
     Returns:
-        dict: A dictionary containing the retrieved events.
+        List[Dict[str, Any]]: Retrieved events.
     """
-    key = "live_events"
+    key = f"live_events:{cursor}:{limit}"
+    
+    if (cached_events := await Cache.get(key)):
+        logger.info("✅ Cache hit: Events retrieved from Redis.")
+        return cached_events
 
-    results = await Cache.get(key)
-    if results is not None:
-        logger.info(f"✅ Cache hit: Live Events retrieved from Redis.")
-        return {"message": "Live events fetched from cache", "data": results}
+    logger.info(f"📥 Fetching Live Events for User {user.id} ({user.type})")
 
-    logger.info(f"📥 Request: Fetching Live Events for User {user.UserID} ({user.user_type})")
+    # Fetch events from the database
+    events = await Database.fetch_all(Query.get_all_event, limit, cursor)  # Fixed order
+    if not events:
+        logger.warning("❌ No events found in the database.")
+        raise HTTPException(status_code=404, detail="Events not found")
 
-    try:
-        events = await Database.fetch_all(Query.get_all_event)
-        events = events if events else []
+    # Convert event records into response models
+    events_list = [
+        EventResponse(
+            id=str(event["id"]),
+            name=event["name"],
+            details=event["details"],
+            status=event["status"],
+            settlement_time=str(event["settlement_time"]),  # Convert datetime to string
+        ).model_dump()
+        for event in events
+    ]
 
-        await Cache.set(key, events, ex=60)
-        logger.info(f"✅ All Events cached successfully")
+    # Store in cache for 60 seconds
+    await Cache.set(key, events_list, 10)
+    logger.info(f"✅ Cached {len(events_list)} events for future requests.")
 
-    except Exception as e:
-        logger.error(f"❌ Error fetching live events: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal Server Error")
-
-    return {"message": "All events fetched successfully", "data": events}
+    return events_list
 
 async def get_specific_event(eventID: str, user: UserPayload):
     """
@@ -144,9 +157,9 @@ async def get_specific_event(eventID: str, user: UserPayload):
 
     if results:
         logger.info(f"✅ Cache hit: Event {eventID} retrieved from Redis.")
-        return {"message": "Event fetched from cache", "data": results}
+        return {"message": "Event fetched sucessfully", "data": results}
 
-    logger.info(f"📥 Request: Fetching Event {eventID} for User {user.UserID} ({user.user_type})")
+    logger.info(f"📥 Request: Fetching Event {eventID} for User {user.id} ({user.type})")
 
     try:
         event = await Database.fetch_one(Query.get_event, eventID)
@@ -179,8 +192,8 @@ async def settlement_event(eventID: str, user: UserPayload):
     Returns:
         dict: Updated event.
     """
-    if user.user_type != "ADMIN":
-        logger.warning(f"🚫 Unauthorized access: User {user.UserID} attempted to settle an event.")
+    if user.type != "ADMIN":
+        logger.warning(f"🚫 Unauthorized access: User {user.id} attempted to settle an event.")
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     try:
@@ -192,7 +205,7 @@ async def settlement_event(eventID: str, user: UserPayload):
     event = await Cache.get(key)
 
     if event is None:
-        logger.info(f"📥 Fetching Event {eventID} for User {user.UserID} ({user.user_type})")
+        logger.info(f"📥 Fetching Event {eventID} for User {user.id} ({user.type})")
 
         try:
             event = await Database.fetch_one(Query.get_event, eventID)

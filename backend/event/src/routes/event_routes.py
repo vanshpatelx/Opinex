@@ -20,15 +20,15 @@ Related Controllers:
 """
 
 from fastapi import APIRouter, Depends
-from models.order_model import EventReq
-from middleware.jwt import get_current_user
+from src.models.order_model import EventReq
+from src.middleware.jwt import get_current_user
 from src.controllers.event_controller import create_event, get_all_event, get_specific_event, settlement_event
-from models.auth_model import UserPayload
-from typing import Dict, Any
+from src.models.auth_model import UserPayload
+from typing import Dict, Any, List
 
 router = APIRouter(prefix="/event")
 
-@router.post("/", response_model=dict)
+@router.post("", response_model=dict)
 async def create_new_event(event: EventReq, user: dict = Depends(get_current_user)):
     """
     API Endpoint: Create a new event.
@@ -45,13 +45,13 @@ async def create_new_event(event: EventReq, user: dict = Depends(get_current_use
     user_payload = UserPayload(**user)  # Convert dictionary to Pydantic model
     return await create_event(event, user_payload)
 
-@router.get("/{eventID}", response_model=Dict[str, Any])
+@router.get("/", response_model=Dict[str, Any])
 async def get_event_by_id(eventID: int, user: dict = Depends(get_current_user)):
     """
     API Endpoint: Retrieve an event by EventID.
 
     Args:
-        eventID (int): The unique identifier of the event.
+        eventID (int): The unique identifier of the event (query parameter).
         user (dict): Authenticated user details (extracted from JWT).
 
     Returns:
@@ -62,21 +62,22 @@ async def get_event_by_id(eventID: int, user: dict = Depends(get_current_user)):
     user_payload = UserPayload(**user)  # Convert dictionary to Pydantic model
     return await get_specific_event(eventID, user_payload)
 
-@router.get("s", response_model=Dict[str, Any])
-async def get_all_events(user: dict = Depends(get_current_user)):
+
+@router.get("/events", response_model=List[Dict[str, Any]])
+async def get_all_events(cursor: int = 0, limit: int = 50, user: dict = Depends(get_current_user)):
     """
     API Endpoint: Retrieve all events with pagination.
 
     Args:
         user (dict): Authenticated user details (extracted from JWT).
+        cursor (int): By default zero.
+        limit (int): Number of events to retrieve.
 
     Returns:
-        Dict[str, Any]: List of events.
-
-    Last Updated: February 27, 2025
+        List[Dict[str, Any]]: List of events as dictionaries.
     """
-    user_payload = UserPayload(**user)  # Convert dictionary to Pydantic model
-    return await get_all_event(user_payload)
+    return await get_all_event(cursor, limit, UserPayload(**user))
+
 
 @router.post("/settlement/{eventID}", response_model=Dict[str, Any])
 async def settle_event(eventID: int, user: dict = Depends(get_current_user)):
@@ -94,33 +95,3 @@ async def settle_event(eventID: int, user: dict = Depends(get_current_user)):
     """
     user_payload = UserPayload(**user)  # Convert dictionary to Pydantic model
     return await settlement_event(eventID, user_payload)
-
-
-# @router.get("/orders/event/{eventID}", response_model=List[Dict[str, Any]])
-# async def orders_by_eventID(eventID: int, cursor: int = 0, limit: int = 50, user: dict = Depends(get_current_user)):
-#     """
-#     API Endpoint: Admin-Focused Order Retrieval (Paginated by EventID, Ordered by EventID)
-
-#     Args:
-#         eventID (int): The unique identifier of the order.
-#         user (dict): Authenticated user details (extracted from JWT).
-#         cursor (int): by default zero
-#         limit (int): length of data
-#     """
-#     user_payload = UserPayload(**user)  # Convert dictionary to Pydantic model
-#     return await order_by_eventID_controller(eventID, cursor, limit, user_payload)
-
-# @router.get("/orders/user/{userID}", response_model=List[Dict[str, Any]])
-# async def orders_by_userID(userID: int, cursor: int = 0, limit: int = 50, user: dict = Depends(get_current_user)):
-#     """
-#     API Endpoint: Admin-Focused Order Retrieval (Paginated by userID, Ordered by userID)
-
-#     Args:
-#         eventID (int): The unique identifier of the order.
-#         user (dict): Authenticated user details (extracted from JWT).
-#         cursor (int): by default zero
-#         limit (int): length of data
-#     """
-#     user_payload = UserPayload(**user)  # Convert dictionary to Pydantic model
-#     return await order_by_userID_controller(userID, cursor, limit, user_payload)
-

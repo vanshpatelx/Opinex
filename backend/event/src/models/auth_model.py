@@ -3,5 +3,5 @@ from pydantic import BaseModel
 from typing import Literal
 
 class UserPayload(BaseModel):
-    UserID: int
-    user_type: Literal["ADMIN", "USER"]
+    id: int
+    type: Literal["ADMIN", "USER"]

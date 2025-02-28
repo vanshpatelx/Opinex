@@ -220,3 +220,14 @@ class Event(BaseModel):
 
 
 ✅ Settlemnt Server logic change
+
+
+============================================================================================
+LAST TASK
+============================================================================================
+GET /event/health
+POST /event/Params:{Whole Object}
+GET /event/{eventID}
+
+- Check All Routes
+- tests
