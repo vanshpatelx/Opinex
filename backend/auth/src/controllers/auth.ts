@@ -70,6 +70,8 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         const result = await client.query(queryList.getUser, [email]);
         client.release();
 
+        logger.info({ message: "Auth Register: Checking DB", email, result });
+
         if (result.rows.length > 0) {
             logger.warn({ message: "Auth Register: User already exists (DB)", email });
 
