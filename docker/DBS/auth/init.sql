@@ -1,0 +1,9 @@
+CREATE TABLE "Auth"(
+    "id" BIGINT NOT NULL PRIMARY KEY,
+    "email" VARCHAR(255) NOT NULL,
+    "password" TEXT NOT NULL,
+    "type" VARCHAR(10) NOT NULL,
+    "updated_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
+    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
+    "inserted_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL
+);

@@ -1,0 +1,10 @@
+CREATE TABLE "Event" (
+    "id" BIGINT NOT NULL PRIMARY KEY,
+    "name" VARCHAR(100) NOT NULL,
+    "details" TEXT NOT NULL,
+    "status" VARCHAR(20) NOT NULL,
+    "updated_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
+    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
+    "inserted_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
+    "settlement_time" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL
+);
