@@ -13,7 +13,6 @@ app = FastAPI(title="Event API")
 async def health_check():
     return {"success": True, "message": "🚀🚀 Event Server is running."}
 
-
 app.include_router(event_router)
 
 @app.on_event("startup")
