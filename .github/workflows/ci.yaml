@@ -46,16 +46,26 @@ jobs:
         with:
           node-version: "22"
 
+      - name: ⚙️ Set up Python Environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
       - name: 📦 Install Node.js Dependencies
         run: |
           npm install -g turbo
           npm install
 
-      # - name: 🌟 Setup Backend Environment (Variables)
-      #   run: |
-      #     cd scripts/
-      #     chmod +x start.sh
-      #     ./start.sh
+      - name: 🔧 Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          export PATH="$HOME/.local/bin:$PATH"
+
+      - name: Install Event Service Dependencies
+        run: |
+          cd backend/event
+          poetry install --no-root
 
       - name: ✅ Docker Network creations
         run: |
@@ -87,11 +97,6 @@ jobs:
           docker compose -f 'docker/cache/docker-compose.yaml' logs --tail=100
           docker compose -f 'docker/DBS/docker-compose.yaml' logs --tail=100
           docker compose -f 'docker/pubsub/docker-compose.yaml' logs --tail=100
-
-      - name: Install Event service Dependencies
-        run: |
-          cd backend/event
-          poetry install --no-root
 
       - name: ⚡ Start Turbo Dev Mode
         run: |
