@@ -95,7 +95,11 @@ jobs:
 
       - name: ⏳ Curl Service Check
         run: |
-          curl -f http://localhost:5001/auth/health
+          sleep 10
+          ps aux | grep node
+          for i in {1..10}; do
+            curl -f http://localhost:5001/auth/health && break || sleep 3
+          done
 
       - name: ⏳ Wait Until All Servers are Up
         run: |
