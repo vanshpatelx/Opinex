@@ -90,50 +90,8 @@ jobs:
 
       - name: ⚡ Start Turbo Dev Mode
         run: |
-          turbo build
-          # tmux new-session -d -s turbo_session "turbo dev"
-
-      - name: ⏳ Start Turbo Dev
-        run: |
-          tmux new-session -d -s turbo_session "turbo dev"
-          sleep 10  # Wait for services to start
-          echo "Checking running processes..."
-          ps aux | grep node
-          echo "Checking open ports..."
-          netstat -tulnp | grep 5001 || echo "Port 5001 not open yet."
-
-      - name: 🔄 Wait for Auth Service
-        run: |
-          echo "Waiting for auth service to be ready..."
-          for i in {1..10}; do
-            if netstat -tulnp | grep 5001; then
-              echo "Auth service is listening on port 5001."
-              break
-            fi
-            echo "Retrying in 3 seconds..."
-            sleep 3
-          done
-
-      - name: ✅ Curl Service Check
-        run: |
-          for i in {1..10}; do
-            if curl -f http://localhost:5001/auth/health; then
-              echo "Auth service is up!"
-              exit 0
-            fi
-            echo "Retrying in 3 seconds..."
-            sleep 3
-          done
-          echo "Auth service failed to start!"
-          exit 1
-
-      # - name: ⏳ Curl Service Check
-      #   run: |
-      #     sleep 10
-      #     ps aux | grep node
-      #     for i in {1..10}; do
-      #       curl -f http://localhost:5001/auth/health && break || sleep 3
-      #     done
+          nohup turbo dev > turbo.log 2>&1 &
+          echo "Turbo Dev started with PID: $!"
 
       - name: ⏳ Wait Until All Servers are Up
         run: |
@@ -148,7 +106,7 @@ jobs:
 
       - name: 🛑 Stop Turbo Dev
         run: |
-          tmux kill-session -t turbo_session || echo "Turbo session not running"
+          pkill -f "turbo dev" || echo "Turbo Dev process not running"
 
       # - name: 🧹 Cleanup Resources
       #   run: |
