@@ -88,8 +88,14 @@ jobs:
           docker compose -f 'docker/DBS/docker-compose.yaml' logs --tail=100
           docker compose -f 'docker/pubsub/docker-compose.yaml' logs --tail=100
 
+      - name: Install Event service Dependencies
+        run: |
+          cd backend/event
+          poetry install --no-root
+
       - name: ⚡ Start Turbo Dev Mode
         run: |
+          turbo build
           nohup turbo dev > turbo.log 2>&1 &
           echo "Turbo Dev started with PID: $!"
 
