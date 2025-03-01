@@ -73,7 +73,7 @@ jobs:
           cd pubsub
           docker compose up -d
           echo " 🚀 Docker common resources running"
-          sleep 30
+          sleep 10
 
       - name: ✅ Verify Running Containers
         run: |
