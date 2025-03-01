@@ -78,10 +78,10 @@ web_modules
 .yarn-integrity
 
 # dotenv environment variable files
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
+# .env.development.local
+# .env.test.local
+# .env.production.local
+# .env.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -148,7 +148,7 @@ __pycache__
 *.pyd
 
 # Ignore environment files
-.env
+# .env
 .vscode/
 .idea/
 .DS_Store
