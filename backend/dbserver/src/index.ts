@@ -38,4 +38,5 @@ async function startServer() {
         process.exit(1);
     }
 }
+
 startServer().catch((err) => logger.error("❌ Unexpected error:", err));

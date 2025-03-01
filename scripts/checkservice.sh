@@ -27,9 +27,9 @@ cd "$(dirname "$0")/.." || { printf "${RED}${ERROR} Failed to change to project 
 
 # 🥒 Health Check URLs
 SERVICES=(
-    "auth http://localhost:5001/auth/health"
-    "event http://localhost:8000/event/health"
-    "dbserver http://localhost:5003/dbserver/health"
+    "auth http://localhost:5001/auth/health/"
+    "event http://localhost:8000/event/health/"
+    "dbserver http://localhost:5003/dbserver/health/"
 )
 
 # 🕒 Configuration

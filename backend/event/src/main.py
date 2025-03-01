@@ -23,6 +23,7 @@ async def startup():
         logger.error("❌ Service initialization failed. Exiting...")
         exit(1)
 
+
 @app.on_event("shutdown")
 async def shutdown():
     """Cleanup resources on shutdown."""
