@@ -44,40 +44,49 @@ jobs:
       - name: ⚙️ Set up Node.js Environment
         uses: actions/setup-node@v3
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: 📦 Install Node.js Dependencies
         run: |
           npm install -g turbo
           npm install
 
-      - name: 🌟 Setup Backend Environment (Variables)
-        run: |
-          cd scripts/
-          chmod +x start.sh
-          ./start.sh
-      
+      # - name: 🌟 Setup Backend Environment (Variables)
+      #   run: |
+      #     cd scripts/
+      #     chmod +x start.sh
+      #     ./start.sh
+
       - name: ✅ Docker Network creations
         run: |
           docker network ls | grep main_network || docker network create main_network
-      
-      - name:  🚀  Run common docker Resources (like pubsub)
+
+      - name: 🚀  Run docker Resources (DB, cache, pubsub)
         run: |
           cd docker
-          cd common
+          cd cache
+          docker compose up -d
+          cd ..
+          cd DBS
+          docker compose up -d
+          cd ..
+          cd pubsub
           docker compose up -d
           echo " 🚀 Docker common resources running"
- 
-      - name: 🐳 Configure Resources in Docker
-        run: |
-          docker compose -f 'docker/docker-compose.resources.yaml' up -d --build --wait
-      
+          sleep(30) # wait for 30 seconds
+
       - name: ✅ Verify Running Containers
-        run: docker compose -f 'docker/docker-compose.resources.yaml' ps
-      
+        run: |
+          docker compose -f 'docker/cache/docker-compose.yaml' ps
+          docker compose -f 'docker/DBS/docker-compose.yaml' ps
+          docker compose -f 'docker/pubsub/docker-compose.yaml' ps
+
       - name: 🐛 Debug Logs on Failure
         if: failure()
-        run: docker compose -f 'docker/docker-compose.resources.yaml' logs --tail=100
+        run: |
+          docker compose -f 'docker/cache/docker-compose.yaml' logs --tail=100
+          docker compose -f 'docker/DBS/docker-compose.yaml' logs --tail=100
+          docker compose -f 'docker/pubsub/docker-compose.yaml' logs --tail=100
 
       - name: ⚡ Start Turbo Dev Mode
         run: |
@@ -99,52 +108,52 @@ jobs:
         run: |
           tmux kill-session -t turbo_session || echo "Turbo session not running"
 
-      - name: 🧹 Cleanup Resources
-        run: |
-          docker compose -f 'docker/docker-compose.resources.yaml' down -v
+      # - name: 🧹 Cleanup Resources
+      #   run: |
+      #     docker compose -f 'docker/docker-compose.resources.yaml' down -v
 
-      - name: 🏗️ Build Images
-        run: |
-          cd scripts/
-          chmod +x build_images.sh
-          ./build_images.sh
+      # - name: 🏗️ Build Images
+      #   run: |
+      #     cd scripts/
+      #     chmod +x build_images.sh
+      #     ./build_images.sh
 
-      - name: 🐳 Configure Docker Images + Resources
-        run: |
-          docker compose -f 'docker/docker-compose.yaml' up -d --build --wait
-      
-      - name: ✅ Verify Running Containers
-        run: docker compose -f 'docker/docker-compose.yaml' ps
-      
-      - name: 🐛 Debug Logs on Failure
-        if: failure()
-        run: docker compose -f 'docker/docker-compose.yaml' logs --tail=100
+      # - name: 🐳 Configure Docker Images + Resources
+      #   run: |
+      #     docker compose -f 'docker/docker-compose.yaml' up -d --build --wait
 
-      - name: ⏳ Wait Until All Servers are Up (Docker)
-        run: |
-          cd scripts/
-          chmod +x checkservice.sh
-          ./checkservice.sh
+      # - name: ✅ Verify Running Containers
+      #   run: docker compose -f 'docker/docker-compose.yaml' ps
 
-      - name: 🔬 Run Tests in /packages/test
-        run: |
-          cd packages/test
-          npm run test
+      # - name: 🐛 Debug Logs on Failure
+      #   if: failure()
+      #   run: docker compose -f 'docker/docker-compose.yaml' logs --tail=100
 
-      - name: 🔄 Convert JSON to Space-Separated List
-        id: format_services
-        run: |
-          services_list=$(echo '${{ needs.detect-changes.outputs.services }}' | jq -r '.[]' | tr '\n' ' ')
-          echo "services_list=$services_list" >> "$GITHUB_ENV"
+      # - name: ⏳ Wait Until All Servers are Up (Docker)
+      #   run: |
+      #     cd scripts/
+      #     chmod +x checkservice.sh
+      #     ./checkservice.sh
 
-      - name: 🔑 Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      # - name: 🔬 Run Tests in /packages/test
+      #   run: |
+      #     cd packages/test
+      #     npm run test
 
-      - name: 🏷️ Tag Images
-        run: |
-          cd scripts/
-          chmod +x tag_images.sh
-          ./tag_images.sh ${{ secrets.DOCKER_USERNAME }} ${{ github.sha }} $services_list
+      # - name: 🔄 Convert JSON to Space-Separated List
+      #   id: format_services
+      #   run: |
+      #     services_list=$(echo '${{ needs.detect-changes.outputs.services }}' | jq -r '.[]' | tr '\n' ' ')
+      #     echo "services_list=$services_list" >> "$GITHUB_ENV"
+
+      # - name: 🔑 Login to Docker Hub
+      #   uses: docker/login-action@v2
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # - name: 🏷️ Tag Images
+      #   run: |
+      #     cd scripts/
+      #     chmod +x tag_images.sh
+      #     ./tag_images.sh ${{ secrets.DOCKER_USERNAME }} ${{ github.sha }} $services_list

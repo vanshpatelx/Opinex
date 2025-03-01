@@ -103,7 +103,8 @@ async def get_all_event(cursor: int, limit: int, user: UserPayload):
     
     if (cached_events := await Cache.get(key)):
         logger.info("✅ Cache hit: Events retrieved from Redis.")
-        return cached_events
+        return {"message": "Event fetched successfully", "data": cached_events}
+
 
     logger.info(f"📥 Fetching Live Events for User {user.id} ({user.type})")
 
@@ -129,7 +130,8 @@ async def get_all_event(cursor: int, limit: int, user: UserPayload):
     await Cache.set(key, events_list, 10)
     logger.info(f"✅ Cached {len(events_list)} events for future requests.")
 
-    return events_list
+    return {"message": "Event fetched successfully", "data": events_list}
+
 
 async def get_specific_event(eventID: str, user: UserPayload):
     """

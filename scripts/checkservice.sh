@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ============================================================
-# 🌟 Backend Health Check Script
+# ✨ Backend Health Check Script
 # ============================================================
 
 # 🎨 Define Colors for UI Formatting
@@ -25,12 +25,12 @@ INFO="🔍"
 # ============================================================
 cd "$(dirname "$0")/.." || { printf "${RED}${ERROR} Failed to change to project root. Please run from within the project.${RESET}\n"; exit 1; }
 
-# 📂 Load Environment Variables
-if [[ ! -f "variables.txt" ]]; then
-    printf "${RED}${ERROR} variables.txt not found in the project root!${RESET}\n"
-    exit 1
-fi
-source ./variables.txt
+# 🥒 Health Check URLs
+SERVICES=(
+    "auth http://localhost:5001/auth/health"
+    "event http://localhost:8000/event/health"
+    "dbserver http://localhost:5003/dbserver/health"
+)
 
 # 🕒 Configuration
 MAX_WAIT_TIME=500
@@ -38,39 +38,21 @@ WAIT_TIME=0
 WAIT_INTERVAL=5
 
 # ============================================================
-# 📌 Detect Backend Services
-# ============================================================
-SERVICES=($(ls -d backend/*/ 2>/dev/null | xargs -n 1 basename))
-
-if [[ ${#SERVICES[@]} -eq 0 ]]; then
-    printf "${RED}${ERROR} No backend services detected! Ensure you are in the correct directory.${RESET}\n"
-    exit 1
-fi
-
-# 📝 Print the list of detected services
-printf "\n${CYAN}${INFO} Checking health status of ${#SERVICES[@]} services...${RESET}\n\n"
-
-# ============================================================
-# 🚦 Service Health Check Loop
+# 🛡️ Service Health Check Loop
 # ============================================================
 while true; do
     ALL_READY=true
 
     for SERVICE in "${SERVICES[@]}"; do
-        SERVICE_PORT_VAR="$(echo "${SERVICE}_PORT" | tr '[:lower:]' '[:upper:]')"  # Convert service name to uppercase
-        SERVICE_PORT="${!SERVICE_PORT_VAR}"  # Get port value from environment variables
-
-        if [[ -z "$SERVICE_PORT" ]]; then
-            printf "${YELLOW}${WARNING} Port variable $SERVICE_PORT_VAR is not set in variables.txt. Skipping ${BOLD}$SERVICE${RESET}!\n"
-            continue
-        fi
+        SERVICE_NAME=$(echo "$SERVICE" | awk '{print $1}')
+        SERVICE_URL=$(echo "$SERVICE" | awk '{print $2}')
 
         # Suppress curl errors and check service health
-        if ! curl -sSf "http://localhost:$SERVICE_PORT/$SERVICE/health" > /dev/null 2>&1; then
-            printf "${YELLOW}${WAITING} Waiting for ${BOLD}$SERVICE${RESET} on port ${BOLD}$SERVICE_PORT${RESET}...\n"
+        if ! curl -sSf "$SERVICE_URL" > /dev/null 2>&1; then
+            printf "${YELLOW}${WAITING} Waiting for ${BOLD}$SERVICE_NAME${RESET} at ${BOLD}$SERVICE_URL${RESET}...\n"
             ALL_READY=false
         else
-            printf "${GREEN}${CHECK} ${BOLD}$SERVICE${RESET} is up on port ${BOLD}$SERVICE_PORT${RESET}!\n"
+            printf "${GREEN}${CHECK} ${BOLD}$SERVICE_NAME${RESET} is up at ${BOLD}$SERVICE_URL${RESET}!\n"
         fi
     done
 

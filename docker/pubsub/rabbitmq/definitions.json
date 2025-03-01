@@ -1,0 +1,67 @@
+{
+  "rabbit_version": "3.9",
+  "users": [
+    {
+      "name": "admin",
+      "password_hash": "hwfOs1TkA3AQ4u4y/6HpIY/kr0AistV3xEsXykEQy1bmCooq",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ["administrator"]
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "queues": [
+    {
+      "name": "auth_queue",
+      "vhost": "/",
+      "durable": true
+    },
+    {
+      "name": "event_queue",
+      "vhost": "/",
+      "durable": true
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "auth_exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true
+    },
+    {
+      "name": "event_exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true
+    }
+  ],
+  "bindings": [
+    {
+      "source": "auth_exchange",
+      "vhost": "/",
+      "destination": "auth_queue",
+      "destination_type": "queue",
+      "routing_key": "auth.registered"
+    },
+    {
+      "source": "event_exchange",
+      "vhost": "/",
+      "destination": "event_queue",
+      "destination_type": "queue",
+      "routing_key": "event.registered"
+    }
+  ]
+}

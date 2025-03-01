@@ -1,0 +1,63 @@
+Auth: 5001
+cache:6379
+DB: 5432
+# user:${email}
+# token includes:
+# generateToken({ id: userId.toString(), email, type });
+auth_exchange => auth.registered =>  auth_queue
+Routes:
+GET /auth/health
+POST /auth/register:Params:{email}:{password}
+POST /auth/login:Params:{email}:{password}
+
+
+DB Server: 5003
+
+
+Event: 8000
+event_exchange => event.registered =>  event_queue
+cache:6380
+DB: 5433
+# event:{eventID}
+# events = live_events:{cursor}:{limit}
+
+Routes: 
+GET /event/health
+POST /event/Params:{Whole Object}
+GET /event/{eventID}
+GET /event/events/URLParams:{cursor}:{limit}
+POST /event/settlements/Params:{eventID}
+
+Testcases:
+1. Write first because it's more needed
+Ex.
+1. Register
+    1. Register a user
+    2. Try to register the same user
+    3. Try to register a user with invalid email
+    4. Try to register a user with invalid password
+    5. Try to register a user with invalid Params or Body
+2. Login
+    1. Login a user
+    2. Try to login a user with invalid email
+    3. Try to login a user with not registered email
+    4. Try to login a user with invalid password
+    5. Try to login a user with invalid Params or Body
+
+3. Create an event
+    1. Create an event
+    2. Try to create an event with invalid Params or Body
+    3. Unauthorizaed means not admin user try to create an event
+    4. without token try to create an event
+
+4. Get an event
+    1. Get an event
+    2. Try to get an event with invalid eventID
+    3. Try to get an event with invalid Params or Body
+    4. without token try to get an event
+
+5. Get all live events
+    1. Get all live events
+    2. Try to get all live events with invalid Params or Body
+    3. without token try to get all live events
+

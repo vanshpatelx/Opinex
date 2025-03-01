@@ -63,8 +63,10 @@ async def get_event_by_id(eventID: int, user: dict = Depends(get_current_user)):
     return await get_specific_event(eventID, user_payload)
 
 
-@router.get("/events", response_model=List[Dict[str, Any]])
-async def get_all_events(cursor: int = 0, limit: int = 50, user: dict = Depends(get_current_user)):
+@router.get("/events", response_model=Dict[str, Any])
+async def get_all_events(
+    cursor: int = 0, limit: int = 50, user: dict = Depends(get_current_user)
+):
     """
     API Endpoint: Retrieve all events with pagination.
 
@@ -74,7 +76,7 @@ async def get_all_events(cursor: int = 0, limit: int = 50, user: dict = Depends(
         limit (int): Number of events to retrieve.
 
     Returns:
-        List[Dict[str, Any]]: List of events as dictionaries.
+        Dict[str, Any]: Response containing events.
     """
     return await get_all_event(cursor, limit, UserPayload(**user))
 

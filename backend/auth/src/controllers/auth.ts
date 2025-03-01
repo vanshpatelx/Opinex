@@ -32,7 +32,7 @@ import queryList from "../config/DB/query";
 // Define a schema
 const userSchema = z.object({
     email: z.string().email(),
-    password: z.string()
+    password: z.string().nonempty(),
 });
 
 
@@ -222,7 +222,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         const token = generateToken({ id: userId.toString(), email, type });
         logger.info({ message: "Auth Login: Token generated", email, userId });
 
-        res.status(200).json({ message: "User login successful", token });
+        res.status(200).json({ message: "User login successfully", token });
         logger.info({ message: "Auth: User successfully logged in", email, userId });
     } catch (error: unknown) {
         logger.error({
