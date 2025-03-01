@@ -93,6 +93,10 @@ jobs:
           turbo build
           tmux new-session -d -s turbo_session "turbo dev"
 
+      - name: ⏳ Curl Service Check
+        run: |
+          curl -f http://localhost:5001/auth/health
+
       - name: ⏳ Wait Until All Servers are Up
         run: |
           cd scripts/
