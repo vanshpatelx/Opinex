@@ -1,17 +1,6 @@
 version: '3.8'
 
 services:
-  event_redis:
-    container_name: event_redis_container
-    image: redis:latest
-    restart: unless-stopped
-    command: ["redis-server", "--requirepass", "password"]
-    ports:
-      - "6379:6379"
-    volumes:
-      - event_redis_data:/data
-    networks:
-      - main_network
 
   auth_redis:
     container_name: auth_redis_container
@@ -19,9 +8,45 @@ services:
     restart: unless-stopped
     command: ["redis-server", "--requirepass", "password"]
     ports:
-      - "6380:6379"
+      - "6379:6379"
     volumes:
       - auth_redis_data:/data
+    networks:
+      - main_network
+
+  event_redis:
+    container_name: event_redis_container
+    image: redis:latest
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "password"]
+    ports:
+      - "6380:6379"
+    volumes:
+      - event_redis_data:/data
+    networks:
+      - main_network
+
+  holding_redis:
+    container_name: holding_redis_container
+    image: redis:latest
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "password"]
+    ports:
+      - "6381:6379"
+    volumes:
+      - holding_redis_data:/data
+    networks:
+      - main_network
+
+  user_redis:
+    container_name: user_redis_container
+    image: redis:latest
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "password"]
+    ports:
+      - "6382:6379"
+    volumes:
+      - user_redis_data:/data
     networks:
       - main_network
 
@@ -32,3 +57,5 @@ networks:
 volumes:
   event_redis_data:
   auth_redis_data:
+  holding_redis_data:
+  user_redis_data:

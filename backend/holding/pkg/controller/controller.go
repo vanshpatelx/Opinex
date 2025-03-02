@@ -32,7 +32,7 @@ import (
 	"log"
 	"strconv"
 	"time"
-
+	"fmt"
 	"holding/pkg/cache"
 	"holding/pkg/db"
 
@@ -60,26 +60,26 @@ Last Updated: February 26, 2025
 ***/
 func GetHoldingByID(c *fiber.Ctx) error {
 	userID := c.Params("userID")
-	userIDJWT, ok := c.Locals("userID").(string)
+	userIDJWT, ok := c.Locals("Id").(string)
 	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user ID"})
 	}
 
 	// Authorization check
-	if userID != userIDJWT && c.Locals("role") != "ADMIN" {
+	if userID != userIDJWT && c.Locals("Role") != "ADMIN" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
 	}
 
 	// Try fetching from cache
 	cacheKey := "Holding:UserID:" + userID
-	if cachedData, err := cache.Get(cacheKey); err == nil {
+	if cachedData, err := cache.GetHolding(cacheKey); err == nil {
 		if holdings, exists := cachedData["holdings"]; exists {
 			return c.JSON(fiber.Map{"message": "Fetched Holdings successfully", "userID": userID, "holdings": holdings})
 		}
 	}
 
 	// Fetch from DB
-	results, err := db.FetchAll("SELECT eventID, price, quantity, locked FROM holdings WHERE userID = $1;", userID)
+	results, err := db.FetchAllHolding("SELECT user_id, balance, lb, FROM holdings WHERE userID = $1;", userID)
 	if err != nil {
 		log.Println("DB Error:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch holdings from DB"})
@@ -108,7 +108,7 @@ func GetHoldingByID(c *fiber.Ctx) error {
 	}
 
 	// Update cache
-	cache.Set(cacheKey, map[string]interface{}{"holdings": results}, 24*time.Hour)
+	cache.SetHolding(cacheKey, map[string]interface{}{"holdings": results}, 24*time.Hour)
 
 	return c.JSON(fiber.Map{"message": "Fetched Holdings successfully", "userID": userID, "holdings": results})
 }
@@ -131,42 +131,88 @@ Returns:
 
 Last Updated: February 26, 2025
 ***/
+// func GetBalanceByID(c *fiber.Ctx) error {
+// 	userID := c.Query("userID")         // Extract from URL query params
+// 	userIDJWT, ok := c.Locals("Id").(string) // Extract from JWT claims
+
+// 	// Debugging prints
+// 	fmt.Printf("🔹 Query Param userID: %v (Type: %T)\n", userID, userID)
+// 	fmt.Printf("🔹 JWT userID (Locals[Id]): %v (Type: %T)\n", userIDJWT, userIDJWT)
+
+// 	// Ensure JWT userID is extracted properly
+// 	if !ok {
+// 		fmt.Println("🚨 Error: Failed to extract userID from JWT")
+// 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user ID", "userId": userID, "userIDJWT": userIDJWT})
+// 	}
+
+// 	// Fix potential integer-string mismatch by converting JWT userID to a string
+// 	userIDJWTStr := fmt.Sprintf("%v", userIDJWT)
+
+// 	// Authorization check
+// 	if userID != userIDJWTStr && c.Locals("Role") != "ADMIN" {
+// 		fmt.Println("🚨 Unauthorized: userID in query does not match JWT or user is not an ADMIN")
+// 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": " access"})
+// 	}
+
+// 	fmt.Println("✅ Authorized! Fetching balance for user:", userID)
+
+// 	// Fetch balance logic...
+// 	return c.JSON(fiber.Map{"message": "Success", "userID": userID})
+// }
+
+
 func GetBalanceByID(c *fiber.Ctx) error {
-	userID := c.Params("userID")
-	userIDJWT, ok := c.Locals("userID").(string)
+	fmt.Println("User ID:", c.Query("userID"))
+	fmt.Println("User ID JWT:", c.Locals("Id").(string))
+
+	userID := c.Query("userID")
+	userIDJWT, ok := c.Locals("Id").(string)
 	if !ok {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user ID"})
 	}
 
+	fmt.Println("User ID:", userID)
+	fmt.Println("User ID JWT:", userIDJWT)
+
 	// Authorization check
-	if userID != userIDJWT && c.Locals("role") != "ADMIN" {
+	if userID != userIDJWT && c.Locals("Role") != "ADMIN" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
 	}
 
+	fmt.Println("Checking in cache")
+
 	// Try fetching from cache
 	cacheKey := "Balance:UserID:" + userID
-	if data, err := cache.Get(cacheKey); err == nil {
-		if balance, exists := data["balance"].(string); exists {
-			return c.JSON(fiber.Map{"message": "Fetched Balance successfully", "userID": userID, "balance": balance})
+	if data, err := cache.GetUser(cacheKey); err == nil {
+		if balance, exists1 := data["balance"].(string); exists1 {
+			if lb, exists2 := data["lb"].(string); exists2 {
+				return c.JSON(fiber.Map{"message": "Fetched Balance successfully", "userID": userID, "balance": balance, "lb": lb})
+			}
 		}
 	}
+	
+	fmt.Println("Checking in DB")
 
 	// Fetch from DB
-	result, err := db.FetchOne("SELECT balance FROM users WHERE id = $1;", userID)
+	result, err := db.FetchOneUser(`SELECT balance, lb FROM "User" WHERE user_id = $1;`, userID)
 	if err != nil {
 		log.Println("DB Error:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch balance from DB"})
-	}
+	}	
+
+	fmt.Println("Checking in Balacne")
 
 	// Ensure balance is a string
-	balance, ok := result["balance"].(string)
-	if !ok {
-		log.Println("Invalid balance data type:", result["balance"])
+	balance, ok1 := result["balance"].(string)
+	lb, ok2 := result["lb"].(string)
+	
+	if !ok1 || !ok2 {
+		log.Println("Invalid balance or lb data type:", result)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Invalid balance data type"})
 	}
-
+	
 	// Update cache
-	cache.Set(cacheKey, fiber.Map{"balance": balance}, 24*time.Hour)
+	cache.SetUser(cacheKey, fiber.Map{"balance": balance, "lb": lb}, 60*time.Minute)
 
-	return c.JSON(fiber.Map{"message": "Fetched Balance successfully", "userID": userID, "balance": balance})
+	return c.JSON(fiber.Map{"message": "Fetched Balance successfully", "user_id": userID, "balance": balance, "locked_balance": lb})
 }

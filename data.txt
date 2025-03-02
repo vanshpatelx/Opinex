@@ -1,3 +1,10 @@
+========================left work==========================
+- When we create auth then also must have to create a user with default balance
+- Adding balance
+- settlements - CRUD balance and holdings, in cache and also in DB
+===========================================================
+
+
 Auth: 5001
 cache:6379
 DB: 5432
@@ -61,3 +68,7 @@ Ex.
     2. Try to get all live events with invalid Params or Body
     3. without token try to get all live events
 
+
+
+
+Holding

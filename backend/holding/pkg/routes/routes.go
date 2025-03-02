@@ -23,15 +23,15 @@ Last Updated: February 26, 2025
 package routes
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"holding/pkg/controller"
 	"holding/pkg/middleware"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func RegisterHoldingRoutes(app *fiber.App) {
 	holdingRoutes := app.Group("/holdings")
-	holdingRoutes.Use(middleware.JWTMiddleware)
 
-	holdingRoutes.Get("/:userID", controller.GetHoldingByID)
-	holdingRoutes.Get("/balance/:userID", controller.GetBalanceByID)
+	// holdingRoutes.Get("/:userID", controller.GetHoldingByID)
+	holdingRoutes.Get("/balance",middleware.JWTMiddleware,  controller.GetBalanceByID)
 }

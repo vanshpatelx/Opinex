@@ -51,3 +51,36 @@ Holding:UserID:UserID
     "quantity": ""
     "locked": ""
 }]
+
+
+
+========================left work==========================
+- Adding balance
+Holding DB (2)
+Holding Cache (2)
+- Middleware Checks
+- Adding Dummy table and data
+
+- Function checks
+- Write new function => Add Balnace
+- test it
+=======================================
+
+Test Case:
+Get holding means stock avalible
+1. Get holding means stock avalible
+2. Check user only access their own holdings
+3. Admin can access anyone holdings
+4. Invalid UserID (Params)
+5. Without token
+Get Balance
+1. Get Balance
+2. Check user only access their own balance
+3. Admin can access anyone balance
+4. Invalid Params (userID, balance)
+5. Without token
+Update Balance
+1. Update Balance
+2. Update user only access their own balance
+3. Invalid Params (userID, balance)
+4. Without token

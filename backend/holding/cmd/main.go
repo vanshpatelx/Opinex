@@ -99,47 +99,39 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 
-	"holding/pkg/cache"
-	"holding/pkg/db"
-	"holding/pkg/middleware"
+	"holding/pkg/config"
+	"holding/pkg/healthcheck"
 	"holding/pkg/routes"
 )
 
 func main() {
-	app := fiber.New(fiber.Config{
-		JSONEncoder: json.Marshal,
-		JSONDecoder: json.Unmarshal,
-	})
+    config.LoadConfig()
 
-    cache.Init("localhost:6379", "")
-    db.Init("postgres://admin:admin123@localhost:5432/mydatabase?sslmode=disable")
+    // Check service readiness before proceeding
+    healthcheck.CheckAllServices()
 
-	// Middleware
-	app.Use(logger.New()) // Log requests
-	app.Use(cors.New())   // Enable CORS
+    app := fiber.New(fiber.Config{
+        JSONEncoder: json.Marshal,
+        JSONDecoder: json.Unmarshal,
+    })
 
-    app.Post("/auth/login", func(c *fiber.Ctx) error {
-		// Dummy user data (in real-world, verify username & password)
-		id := "12334512412334512412"
-		role := "admin"
+    // Middleware
+    app.Use(logger.New()) // Log requests
+    app.Use(cors.New())   // Enable CORS
 
-		token, err := middleware.GenerateJWT(id, role)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
-		}
-		return c.JSON(fiber.Map{"token": token})
-	})
+    app.Get("/", func(c *fiber.Ctx) error {
+        return c.JSON(fiber.Map{
+            "message": "🚀 Holding Service is Running!",
+        })
+    })
 
+        
+    app.Get("/holding/health", func(c *fiber.Ctx) error {
+        return c.JSON(fiber.Map{"success": true, "message": "Server is running."})
+    })
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{"message": "🚀 Holding Service is Running!"})
-	})
+    routes.RegisterHoldingRoutes(app)
 
-	app.Get("/holding/health", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{"success": true, "message": "Server is running."})
-	})
-
-	routes.RegisterHoldingRoutes(app)
-
-	log.Fatal(app.Listen(":3005"))
+    log.Println("✅ Server is starting on port", config.AppConfig.Port)
+    app.Listen(":" + config.AppConfig.Port)
 }

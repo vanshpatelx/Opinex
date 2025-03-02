@@ -1,0 +1,7 @@
+{
+    "name": "holding",
+    "scripts": {
+        "build": "go build -o cmd/main ./cmd",
+        "dev": "go run cmd/main.go"
+    }
+}

@@ -6,6 +6,7 @@ require (
 	github.com/goccy/go-json v0.10.5
 	github.com/gofiber/fiber/v2 v2.52.6
 	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/redis/go-redis/v9 v9.7.1
 )

@@ -1,0 +1,8 @@
+CREATE TABLE "User" (
+    "user_id" BIGINT NOT NULL PRIMARY KEY,
+    "balance" INT NOT NULL,
+    "lb" INT NOT NULL,
+    "updated_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
+    "created_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL,
+    "inserted_at" TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL
+);

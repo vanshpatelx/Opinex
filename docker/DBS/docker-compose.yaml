@@ -35,6 +35,40 @@ services:
     networks:
       - postgres_network
 
+  holding_postgres:
+    container_name: holding_postgres_container
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5434:5432"
+    volumes:
+      - pg_holding_data:/var/lib/postgresql/data
+      - ./holding/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./holding/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    networks:
+      - postgres_network
+  
+  user_postgres:
+    container_name: user_postgres_container
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5435:5432"
+    volumes:
+      - pg_user_data:/var/lib/postgresql/data
+      - ./user/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./user/seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    networks:
+      - postgres_network
+
 networks:
   postgres_network:
     driver: bridge
@@ -42,3 +76,5 @@ networks:
 volumes:
   pg_auth_data:
   pg_event_data:
+  pg_holding_data:
+  pg_user_data:
