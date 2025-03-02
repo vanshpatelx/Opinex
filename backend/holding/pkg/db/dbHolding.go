@@ -1,17 +1,24 @@
-// holding/pkg/db/db.go
 /***
-PostgreSQL Database Connection
+Package db - PostgreSQL Database Connection for Holding Service
 
-Manages connection pooling and queries for PostgreSQL.
+Handles the database connection pooling, query execution, and graceful shutdown 
+for the Holding Service.
 
 Features:
-1. Initializes a connection pool to PostgreSQL.
-2. Provides methods for executing queries safely.
-3. Supports graceful shutdown.
+1. **Singleton Connection Pool** - Ensures a single database connection instance.
+2. **Connection Management** - Configures max open/idle connections and retries on failure.
+3. **Query Execution Helpers** - Fetches single or multiple records safely.
+4. **Graceful Shutdown Support** - Closes the connection when shutting down.
 
-Author: Vansh Patel (remotevansh@gmail.com)
-Last Updated: February 26, 2025
-***/
+Methods:
+- **InitDBHolding**: Initializes the PostgreSQL connection with retry logic.
+- **GetDBHolding**: Returns the singleton database connection.
+- **FetchOneHolding**: Retrieves a single row from the database.
+- **FetchAllHolding**: Retrieves multiple rows from the database.
+- **CloseDBHolding**: Closes the database connection.
+
+Last Updated: March 2, 2025
+**/
 
 package db
 

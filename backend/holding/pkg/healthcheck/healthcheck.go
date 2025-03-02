@@ -1,16 +1,29 @@
 // pkg/init/init.go
 /**
-    Service Health Checker
-
-    This module checks the readiness of essential services:
-    - PostgreSQL Database  
-    - Redis Cache  
-
-    If any service is unavailable, the system logs the failure and exits immediately.  
-
-	Author: Vansh Patel (remotevansh@gmail.com)
-	Last Updated: March 2, 2025
+ * Service Health Checker
+ *
+ * Ensures the readiness of essential services before startup:
+ * - PostgreSQL Databases (User & Holding)  
+ * - Redis Caches (User & Holding)  
+ *
+ * If any service is unavailable, the system logs the failure and exits immediately.  
+ *
+ * Components:
+ * - **CheckUserPostgres**: Verifies connectivity to the PostgreSQL database for user-related data.  
+ * - **CheckHoldingPostgres**: Verifies connectivity to the PostgreSQL database for holding-related data.  
+ * - **CheckUserRedis**: Sends a PING command to ensure the Redis cache for user data is available.  
+ * - **CheckHoldingRedis**: Sends a PING command to ensure the Redis cache for holding data is available.  
+ * - **CheckAllServices**: Aggregates all readiness checks and determines system startup eligibility.  
+ *
+ * Security & Reliability Considerations:
+ * - Ensures critical services are available before application execution.
+ * - Logs failures explicitly for easier debugging.
+ * - Uses graceful exit (`os.Exit(1)`) to prevent running in a degraded state.
+ *
+ * Author: Vansh Patel (remotevansh@gmail.com)  
+ * Last Updated: March 2, 2025  
  */
+
 
 package healthcheck
 

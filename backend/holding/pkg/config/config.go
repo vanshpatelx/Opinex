@@ -1,3 +1,25 @@
+/***
+Package config - Application Configuration Loader
+
+Handles the loading of environment variables and setting up configuration values 
+for database connections, Redis, RabbitMQ, and JWT authentication.
+
+Features:
+1. Loads configuration from environment variables, optionally using a `.env` file.
+2. Stores configuration values in a singleton `Config` struct.
+3. Constructs connection URLs for PostgreSQL, Redis, and RabbitMQ.
+4. Supports fallback default values where necessary.
+
+Configuration Includes:
+- **JWTSecret**: Secret key for JWT authentication.
+- **User & Holding Service Databases**: PostgreSQL connection settings.
+- **Redis Caches**: User and Holding service Redis connection settings.
+- **RabbitMQ**: Messaging queue connection settings.
+- **Server Port**: Defines the port for the application.
+
+Last Updated: March 2, 2025
+**/
+
 package config
 
 import (

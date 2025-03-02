@@ -1,17 +1,16 @@
-// holding/pkg/cache/cache.go
-
 /***
-Redis Cache Connection
+Package cache - Redis Cache Connection
 
-Handles connection and operations for Redis caching.
+Manages Redis caching for user-related data with singleton pattern.
 
 Features:
-1. Manages a Redis connection.
-2. Supports GET and SET operations.
-3. Handles auto-reconnect in case of failures.
+1. Initializes and maintains a singleton Redis connection.
+2. Supports GET and SET operations for caching user data.
+3. Implements automatic reconnection with exponential backoff in case of failures.
+4. Ensures thread-safe access using sync.Once.
+5. Provides a method to close the Redis connection gracefully.
 
-Author: Vansh Patel (remotevansh@gmail.com)
-Last Updated: February 26, 2025
+Last Updated: March 2, 2025
 **/
 
 package cache

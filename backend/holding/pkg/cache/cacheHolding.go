@@ -1,3 +1,18 @@
+/***
+Package cache - Redis Cache for Holding Data
+
+Manages Redis caching for holding-related data using a singleton pattern.
+
+Features:
+1. Initializes and maintains a singleton Redis connection for holding data.
+2. Supports GET and SET operations for caching user holdings.
+3. Implements automatic reconnection with exponential backoff to handle failures.
+4. Ensures thread-safe initialization using sync.Once.
+5. Provides a method to close the Redis connection gracefully.
+
+Last Updated: March 2, 2025
+**/
+
 package cache
 
 import (
