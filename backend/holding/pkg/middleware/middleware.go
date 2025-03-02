@@ -21,10 +21,10 @@ package middleware
 
 import (
 	"errors"
-	"fmt"
+	"log"
 	"holding/pkg/config"
 	"strings"
-
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -32,7 +32,6 @@ import (
 // Claims struct for JWT token payload
 type Claims struct {
 	Id    string `json:"id"`
-	Email string `json:"email"`
 	Role  string `json:"type"`
 	jwt.RegisteredClaims
 }
@@ -109,59 +108,50 @@ Last Updated: March 2, 2025
 // }
 
 func JWTMiddleware(c *fiber.Ctx) error {
-	authHeader := c.Get("Authorization")
-	fmt.Println("Auth Header:", authHeader) // Print received header
+    authHeader := c.Get("Authorization")
 
-	if authHeader == "" {
-		fmt.Println("🚨 Missing Authorization header")
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Missing Authorization header"})
-	}
+    if authHeader == "" {
+        log.Println("🚨 Missing Authorization header")
+        return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Missing Authorization header"})
+    }
 
-	// Extract token (format: "Bearer <token>")
-	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-	if tokenString == authHeader {
-		fmt.Println("🚨 Invalid token format")
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token format"})
-	}
+    // Extract token (format: "Bearer <token>")
+    tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+    if tokenString == authHeader {
+        log.Println("🚨 Invalid token format")
+        return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token format"})
+    }
 
-	// Parse and validate token
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			fmt.Println("🚨 Unexpected signing method:", token.Header["alg"])
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-		}
-		fmt.Println("JWT Secret Key:", config.AppConfig.JWTSecret) // Print secret key
-		return []byte(config.AppConfig.JWTSecret), nil
-	})
+    // Parse and validate token
+    token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+        if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+            log.Printf("🚨 Unexpected signing method: %v", token.Header["alg"])
+            return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+        }
+        return []byte(config.AppConfig.JWTSecret), nil
+    })
 
-	// Handle invalid token
-	if err != nil {
-		fmt.Println("🚨 JWT Parse Error:", err)
-		if errors.Is(err, jwt.ErrSignatureInvalid) {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token signature"})
-		} else if errors.Is(err, jwt.ErrTokenExpired) {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Token expired"})
-		}
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token"})
-	}
+    // Handle invalid token
+    if err != nil {
+        log.Printf("🚨 JWT Parse Error: %v", err)
+        if errors.Is(err, jwt.ErrSignatureInvalid) {
+            return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token signature"})
+        } else if errors.Is(err, jwt.ErrTokenExpired) {
+            return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Token expired"})
+        }
+        return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token"})
+    }
 
-	// Extract claims
-	claims, ok := token.Claims.(*Claims)
-	if !ok || !token.Valid {
-		fmt.Println("🚨 Invalid token claims")
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token"})
-	}
+    // Extract claims
+    claims, ok := token.Claims.(*Claims)
+    if !ok || !token.Valid {
+        log.Println("🚨 Invalid token claims")
+        return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid token"})
+    }
 
-	// Print extracted claims
-	fmt.Println("✅ Token Valid. Extracted Claims:")
-	fmt.Println("   - User ID:", claims.Id)
-	fmt.Println("   - Email:", claims.Email)
-	fmt.Println("   - Role:", claims.Role)
-	fmt.Println("   - Expires At:", claims.ExpiresAt)
+    // Attach user info to request context
+    c.Locals("Id", claims.Id)
+    c.Locals("Role", claims.Role)
 
-	// Attach user info to request context
-	c.Locals("Id", claims.Id)
-	c.Locals("Role", claims.Role)
-
-	return c.Next()
+    return c.Next()
 }

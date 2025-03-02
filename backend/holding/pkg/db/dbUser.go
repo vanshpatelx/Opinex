@@ -185,7 +185,7 @@ func InitDBUser(databaseURL string) error {
 // GetDB returns the singleton database connection
 func GetDBUser() (*sql.DB, error) {
 	if dbPoolUser == nil {
-		if err := InitDBUser(config.AppConfig.HOLDING_DBURL); err != nil {
+		if err := InitDBUser(config.AppConfig.USER_DBURL); err != nil {
 			return nil, err
 		}
 	}

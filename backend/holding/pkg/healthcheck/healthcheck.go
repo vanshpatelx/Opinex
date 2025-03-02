@@ -16,14 +16,12 @@ package healthcheck
 
 import (
 	"context"
-	"database/sql"
 	"log"
 	"os"
 
-	"holding/pkg/config"
-
 	_ "github.com/lib/pq"
 	"holding/pkg/cache"
+	"holding/pkg/db"
 )
 
 /**
@@ -35,39 +33,38 @@ import (
     Returns:
     - bool → true if PostgreSQL is ready, otherwise false.  
  */
-func CheckUserPostgres() bool {
-	db, err := sql.Open("postgres", config.AppConfig.USER_DBURL)
+ func CheckUserPostgres() bool {
+	db, err := db.GetDBUser()
 	if err != nil {
-		log.Println("❌ PostgreSQL is not ready:", err)
+		log.Println("❌ PostgreSQL User is not ready:", err)
 		return false
 	}
-	defer db.Close()
 
 	if err = db.Ping(); err == nil {
-		log.Println("✅ PostgreSQL is ready.")
+		log.Println("✅ PostgreSQL User is ready.")
 		return true
 	}
 
-	log.Println("❌ PostgreSQL is not responding.")
+	log.Println("❌ PostgreSQL User is not responding.")
 	return false
 }
 
 func CheckHoldingPostgres() bool {
-	db, err := sql.Open("postgres", config.AppConfig.HOLDING_DBURL)
+	db, err := db.GetDBHolding()
 	if err != nil {
-		log.Println("❌ PostgreSQL is not ready:", err)
+		log.Println("❌ PostgreSQL Holding is not ready:", err)
 		return false
 	}
-	defer db.Close()
 
 	if err = db.Ping(); err == nil {
-		log.Println("✅ PostgreSQL is ready.")
+		log.Println("✅ PostgreSQL Holding is ready.")
 		return true
 	}
 
-	log.Println("❌ PostgreSQL is not responding.")
+	log.Println("❌ PostgreSQL Holding is not responding.")
 	return false
 }
+
 
 /**
     Redis Readiness Check
@@ -84,11 +81,11 @@ func CheckUserRedis() bool {
 	ctx := context.Background()
 	_, err := client.Ping(ctx).Result()
 	if err == nil {
-		log.Println("✅ Redis is ready.")
+		log.Println("✅ Redis User is ready.")
 		return true
 	}
 
-	log.Println("❌ Redis is not responding.")
+	log.Println("❌ Redis User is not responding.")
 	return false
 }
 func CheckHoldingRedis() bool {
@@ -97,11 +94,11 @@ func CheckHoldingRedis() bool {
 	ctx := context.Background()
 	_, err := client.Ping(ctx).Result()
 	if err == nil {
-		log.Println("✅ Redis is ready.")
+		log.Println("✅ Redis User is ready.")
 		return true
 	}
 
-	log.Println("❌ Redis is not responding.")
+	log.Println("❌ Redis User is not responding.")
 	return false
 }
 
