@@ -72,3 +72,24 @@ Ex.
 
 
 Holding
+
+Port: 8081
+cache:
+User: 6382
+Holding: 6381
+DB:
+User: 5435
+Holding: 5434
+
+Balance:UserID:UserID => {balance, locked_balance}
+
+Change in DB Server to Create Automated User
+Also if any user give without userID also works
+
+
+~/learn/opinex/docker/DBS main !4 ?1 ❯ curl -X GET "http://localhost:8080/holdings/balance/?userID=1740929978000112" \                                               Py base 10:49:54 PM
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE3NDA5Mjk5NzgwMDAxMTIiLCJlbWFpbCI6InVzZXIxQGdtYWlsLmNvbSIsInR5cGUiOiJVU0VSIiwiaWF0IjoxNzQwOTMwNDA3LCJleHAiOjE3NDEwMTY4MDd9.e0SEmsixmqBwIrymlaSXybFMFo3IVLQfOrAItB6Sf2g"
+
+{"balance":5000,"locked_balance":100,"message":"Fetched Balance successfully","userID":"1740929978000112"}%
+
+~/learn/opinex/docker/DBS main !4 ?1 ❯                                                                                                                               Py base 10:49:55 PM
