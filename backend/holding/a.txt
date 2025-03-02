@@ -77,7 +77,7 @@ Get Balance
 1. Get Balance
 2. Check user only access their own balance
 3. Admin can access anyone balance
-Invalid Params (userID, balance)
+4. without ID can access their own data
 5. Without token
 Update Balance
 1. Update Balance

@@ -47,6 +47,15 @@ describe("Get Balance", () => {
         expect(response.data).toHaveProperty("locked_balance");
     });
 
+    it("without userID can access their own data", async () => {
+        const response = await axios.get(`${HOLDING_URL}/balance`, {
+            headers: { Authorization: `Bearer ${normalToken}` }
+        });
+        expect(response.status).toBe(200);
+        expect(response.data).toHaveProperty("balance");
+        expect(response.data).toHaveProperty("locked_balance");
+    });
+
     it("Check user only access their own balance means try by another user", async () => {
         try {
             await axios.get(`${HOLDING_URL}/balance`, {

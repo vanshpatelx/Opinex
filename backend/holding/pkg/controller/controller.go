@@ -134,13 +134,17 @@ Returns:
 Last Updated: March 2, 2025
 ***/
 
-
 func GetBalanceByID(c *fiber.Ctx) error {
-	userID := c.Query("userID")
-	userIDJWT, ok := c.Locals("Id").(string)
-	if !ok {
+	userIDJWT, ok1 := c.Locals("Id").(string)
+	if !ok1 {
 		log.Printf("Invalid user ID: Queried by %v", c.Locals("Id"))
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user ID"})
+	}
+
+	userID := c.Query("userID")
+	if userID == "" {
+		log.Printf("No userID provided in query, using JWT userID: %v", userIDJWT)
+		userID = userIDJWT
 	}
 
 	log.Printf("GetBalance by ID Query for userID: %v by user: %v", userIDJWT, userID)
