@@ -29,12 +29,14 @@ Last Updated: February 26, 2025
 package controller
 
 import (
-	"github.com/gofiber/fiber/v2"
 	"holding/pkg/cache"
 	"holding/pkg/db"
 	"log"
 	"strconv"
 	"time"
+
+	"holding/pkg/common"
+	"github.com/gofiber/fiber/v2"
 )
 
 /*
@@ -198,4 +200,47 @@ func GetBalanceByID(c *fiber.Ctx) error {
 		"balance":        balance,
 		"locked_balance": lb,
 	})
+}
+
+
+
+
+func UpdateBalanceByID(c *fiber.Ctx) error {
+	userIDJWT, ok1 := c.Locals("Id").(string)
+	if !ok1 {
+		log.Printf("Invalid user ID: Queried by %v", c.Locals("Id"))
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user ID"})
+	}
+
+	userID := c.Query("userID")
+	if userID == "" {
+		log.Printf("No userID provided in query, using JWT userID: %v", userIDJWT)
+		userID = userIDJWT
+	}
+
+	// Parse balance from request body
+	var request struct {
+		Balance float64 `json:"balance"`
+	}
+	if err := c.BodyParser(&request); err != nil {
+		log.Printf("Invalid request body: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+	balance := request.Balance
+
+	log.Printf("UpdateBalance request for userID: %v by user: %v with new balance: %.2f", userID, userIDJWT, balance)
+
+	// Authorization check
+	if userID != userIDJWT && c.Locals("Role") != "ADMIN" {
+		log.Printf("Unauthorized access by userID: %v for user: %v", userIDJWT, userID)
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
+	}
+
+	if err := common.UpdateBalance("sellOrderPlaced", userID, balance); err != nil {
+		log.Printf("Failed to update balance for userID: %s, Error: %v", userID, err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	// send to pubsub
+	return c.JSON(fiber.Map{"message": "Balance updated successfully"})
 }

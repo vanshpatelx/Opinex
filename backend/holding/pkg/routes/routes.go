@@ -28,9 +28,16 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterHoldingRoutes(app *fiber.App) {
+func GetBalanceRoutes(app *fiber.App) {
 	holdingRoutes := app.Group("/holdings")
 
 	// holdingRoutes.Get("/:userID", controller.GetHoldingByID)
 	holdingRoutes.Get("/balance",middleware.JWTMiddleware,  controller.GetBalanceByID)
+}
+
+
+func UpdateBalanceRoutes(app *fiber.App) {
+	holdingRoutes := app.Group("/holdings")
+
+	holdingRoutes.Post("/balance",middleware.JWTMiddleware,  controller.UpdateBalanceByID)
 }

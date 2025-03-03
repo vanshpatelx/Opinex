@@ -9,6 +9,7 @@ Features:
 3. Implements automatic reconnection with exponential backoff in case of failures.
 4. Ensures thread-safe access using sync.Once.
 5. Provides a method to close the Redis connection gracefully.
+6. Supports executing Lua scripts using Eval.
 
 Last Updated: March 2, 2025
 **/
@@ -89,6 +90,11 @@ func SetUser(key string, value map[string]interface{}, expire time.Duration) err
 	}
 
 	return GetRedisClientUser().Set(ctxUser, key, jsonValue, expire).Err()
+}
+
+// EvalUserScript executes a Lua script in Redis
+func EvalUserScript(script string, keys []string, args ...interface{}) (interface{}, error) {
+	return GetRedisClientUser().Eval(ctxUser, script, keys, args...).Result()
 }
 
 // Close closes the Redis connection

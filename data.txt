@@ -93,3 +93,14 @@ Also if any user give without userID also works
 {"balance":5000,"locked_balance":100,"message":"Fetched Balance successfully","userID":"1740929978000112"}%
 
 ~/learn/opinex/docker/DBS main !4 ?1 ❯                                                                                                                               Py base 10:49:55 PM
+
+
+Update Balance:
+When Start Server: We copy all data from DB to cache,
+Update Balance trigged from:
+- holding
+- Order
+- Trade
+
+EveryOne trigger Holding which is only capable to edit anything,
+all other are just read agents

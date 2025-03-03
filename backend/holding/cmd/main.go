@@ -39,7 +39,8 @@ func main() {
         return c.JSON(fiber.Map{"success": true, "message": "Server is running."})
     })
 
-    routes.RegisterHoldingRoutes(app)
+    routes.GetBalanceRoutes(app)
+    routes.UpdateBalanceRoutes(app)
 
     log.Println("✅ Server is starting on port", config.AppConfig.Port)
     app.Listen(":" + config.AppConfig.Port)
