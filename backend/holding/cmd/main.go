@@ -28,6 +28,7 @@ func main() {
     app.Use(logger.New()) // Log requests
     app.Use(cors.New())   // Enable CORS
 
+
     app.Get("/", func(c *fiber.Ctx) error {
         return c.JSON(fiber.Map{
             "message": "🚀 Holding Service is Running!",
@@ -36,7 +37,7 @@ func main() {
 
         
     app.Get("/holding/health", func(c *fiber.Ctx) error {
-        return c.JSON(fiber.Map{"success": true, "message": "Server is running."})
+        return c.JSON(fiber.Map{"success": true, "message": " 🚀 🚀Server is running."})
     })
 
     routes.GetBalanceRoutes(app)

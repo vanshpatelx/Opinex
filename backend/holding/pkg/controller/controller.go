@@ -37,7 +37,14 @@ import (
 
 	"holding/pkg/common"
 	"github.com/gofiber/fiber/v2"
+	"holding/pkg/rabbitmqQueue"
 )
+
+var rabbitMQProducer *rabbitmqQueue.RabbitMQConsumer
+
+func SetRabbitMQProducer(producer *rabbitmqQueue.RabbitMQConsumer) {
+    rabbitMQProducer = producer
+}
 
 /*
 **
@@ -236,11 +243,27 @@ func UpdateBalanceByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
 	}
 
-	if err := common.UpdateBalance("sellOrderPlaced", userID, balance); err != nil {
+	if err := common.UpdateBalance("addBalance", userID, balance); err != nil {
 		log.Printf("Failed to update balance for userID: %s, Error: %v", userID, err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
 	}
 
-	// send to pubsub
+	// Send to pubsub ✅ Use RabbitMQ Publisher
+	if rabbitMQProducer != nil {
+		success := rabbitMQProducer.PublishMessage("user_balance_exchange", "balance.updated", map[string]interface{}{
+			"userID":  userID,
+			"balance": balance,
+		})
+
+		if !success {
+			// Rollback balance update in case of failed message publish
+			if err := common.UpdateBalance("decreaseBalance", userID, balance); err != nil {
+				log.Printf("Failed to rollback balance for userID: %s, Error: %v", userID, err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+			}
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Internal Server Error"})
+		}
+	}
+
 	return c.JSON(fiber.Map{"message": "Balance updated successfully"})
 }
