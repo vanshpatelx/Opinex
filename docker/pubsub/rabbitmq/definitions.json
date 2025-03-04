@@ -32,6 +32,16 @@
       "name": "event_queue",
       "vhost": "/",
       "durable": true
+    },
+    {
+      "name": "order_queue",
+      "vhost": "/",
+      "durable": true
+    },
+    {
+      "name": "user_balance_queue",
+      "vhost": "/",
+      "durable": true
     }
   ],
   "exchanges": [
@@ -43,6 +53,18 @@
     },
     {
       "name": "event_exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true
+    },
+    {
+      "name": "order_exchange",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true
+    },
+    {
+      "name": "user_balance_exchange",
       "vhost": "/",
       "type": "direct",
       "durable": true
@@ -62,6 +84,20 @@
       "destination": "event_queue",
       "destination_type": "queue",
       "routing_key": "event.registered"
+    },
+    {
+      "source": "order_exchange",
+      "vhost": "/",
+      "destination": "order_queue",
+      "destination_type": "queue",
+      "routing_key": "order.created"
+    },
+    {
+      "source": "user_balance_exchange",
+      "vhost": "/",
+      "destination": "user_balance_queue",
+      "destination_type": "queue",
+      "routing_key": "balance.updated"
     }
   ]
 }
