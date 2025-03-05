@@ -35,15 +35,15 @@ import (
 	"strconv"
 	"time"
 
-	"holding/pkg/common"
 	"github.com/gofiber/fiber/v2"
+	"holding/pkg/common"
 	"holding/pkg/rabbitmqQueue"
 )
 
 var rabbitMQProducer *rabbitmqQueue.RabbitMQConsumer
 
 func SetRabbitMQProducer(producer *rabbitmqQueue.RabbitMQConsumer) {
-    rabbitMQProducer = producer
+	rabbitMQProducer = producer
 }
 
 /*
@@ -68,14 +68,23 @@ Last Updated: February 26, 2025
 **
 */
 func GetHoldingByID(c *fiber.Ctx) error {
-	userID := c.Params("userID")
-	userIDJWT, ok := c.Locals("Id").(string)
-	if !ok {
+	userIDJWT, ok1 := c.Locals("Id").(string)
+	if !ok1 {
+		log.Printf("Invalid user ID: Queried by %v", c.Locals("Id"))
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid user ID"})
 	}
 
+	userID := c.Query("userID")
+	if userID == "" {
+		log.Printf("No userID provided in query, using JWT userID: %v", userIDJWT)
+		userID = userIDJWT
+	}
+
+	log.Printf("GetBalance by ID Query for userID: %v by user: %v", userIDJWT, userID)
+
 	// Authorization check
 	if userID != userIDJWT && c.Locals("Role") != "ADMIN" {
+		log.Printf("Unauthorized access by userID: %v for user: %v", userIDJWT, userID)
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
 	}
 
@@ -208,9 +217,6 @@ func GetBalanceByID(c *fiber.Ctx) error {
 		"locked_balance": lb,
 	})
 }
-
-
-
 
 func UpdateBalanceByID(c *fiber.Ctx) error {
 	userIDJWT, ok1 := c.Locals("Id").(string)

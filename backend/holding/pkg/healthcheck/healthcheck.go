@@ -161,10 +161,10 @@ func CheckAllServices() {
 	
 	// Start RabbitMQ Consumer in a separate goroutine
 	log.Println("📥 RabbitMQ Consumer is starting...")
-	go consumer.Consume()
+	consumer.Consume()
 
 	// Handle graceful shutdown
-	go handleShutdown(consumer)
+	handleShutdown(consumer)
 }
 
 // handleShutdown handles SIGINT/SIGTERM for graceful shutdown

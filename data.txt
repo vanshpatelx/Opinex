@@ -2,6 +2,7 @@
 - When we create auth then also must have to create a user with default balance
 - Adding balance
 - settlements - CRUD balance and holdings, in cache and also in DB
+- if someone placed order and successfully also change in holding too.
 ===========================================================
 
 
@@ -104,3 +105,51 @@ Update Balance trigged from:
 
 EveryOne trigger Holding which is only capable to edit anything,
 all other are just read agents
+
+
+
+
+Task:
+- Update Balance
+- and Send to DB
+- if publisher down then
+- adding triggers stuffs - Consuming
+adding balance data in DB for understand, new trade comes, how balance added
+
+
+Get Holding Route
+Tests
+
+Order Requirements and locking
+if quantity is zero delete it
+
+
+###################################################################################
+triggers stuffs
+- get holding
+- Testcases
+
+
+Triggers looks like
+1. buyOrderPlaced or sellOrderPlaced
+2. userID
+3. amount
+4. orderID
+
+
+✅ addBalance
+✅ decreaseBalance
+placeOrder
+✅ buyOrderPlaced
+✅ sellOrderPlaced
+
+How to store holdings in DB and cache
+Holding:UserID:{UserID}:{EventID}:quantity:locked_quantity:price
+
+In DB
+Holding Primary Key
+UserID 
+EventID
+quantity
+locked_quantity
+price

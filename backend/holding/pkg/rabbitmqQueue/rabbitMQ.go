@@ -3,11 +3,12 @@ package rabbitmqQueue
 import (
 	"encoding/json"
 	"errors"
+	"github.com/streadway/amqp"
+	"holding/pkg/logger"
 	"log"
 	"math/big"
 	"time"
-	"holding/pkg/logger"
-	"github.com/streadway/amqp"
+	"holding/pkg/common"
 )
 
 // RabbitMQConsumer handles message consumption
@@ -20,13 +21,10 @@ type RabbitMQConsumer struct {
 
 // EventMessage represents the structure received from RabbitMQ
 type EventMessage struct {
-	Task          string `json:"task"`               // "Order" || "CreateEvent" || "Settlement"
-	ID            string `json:"eventId"`            // EventID
-	OrderID       string `json:"orderId,omitempty"`  // OrderID
-	OrderPrice    int    `json:"price,omitempty"`    // OrderPrice
-	OrderUserID   string `json:"userId,omitempty"`   // OrderUserID
-	OrderQuantity int    `json:"quantity,omitempty"` // OrderQuantity
-	Type          string `json:"type,omitempty"`     // "BUY" || "SELL"
+	Task    string `json:"task"`              // buyOrderPlaced or sellOrderPlaced
+	UserID  string `json:"user_id,omitempty"` // UserID
+	OrderID string `json:"orderId,omitempty"` // OrderID
+	Amount  int    `json:"amount,omitempty"`  // amount
 }
 
 // NewRabbitMQConsumer initializes a new consumer with retry mechanism
@@ -110,18 +108,28 @@ func (c *RabbitMQConsumer) processMessage(msg amqp.Delivery) {
 		return
 	}
 
-	ID := new(big.Int)
-	if err := ID.UnmarshalText([]byte(orderMsg.ID)); err != nil {
-		log.Printf("❌ Failed to convert orderMsg.ID to big.Int: %v\n", err)
+	UserID := new(big.Int)
+	if err := UserID.UnmarshalText([]byte(orderMsg.UserID)); err != nil {
+		log.Printf("❌ Failed to convert orderMsg.UserID to big.Int: %v\n", err)
+		msg.Nack(false, false)
+		return
+	}
+
+	OrderID := new(big.Int)
+	if err := OrderID.UnmarshalText([]byte(orderMsg.OrderID)); err != nil {
+		log.Printf("❌ Failed to convert orderMsg.OrderID to big.Int: %v\n", err)
 		msg.Nack(false, false)
 		return
 	}
 
 	switch orderMsg.Task {
-	case "CreateEvent":
-		log.Printf("📌 Creating event (Event ID: %s)\n", ID.String())
-	case "Settlement":
-		log.Printf("💰 Processing settlement (Event ID: %s)\n", ID.String())
+	case "buyOrderPlaced":
+		// Process buy order
+		common.BuyOrder(orderMsg.Task, UserID, orderMsg.Amount)
+		log.Printf("📌 Buy Order Payment changed (User ID: %s)\n", UserID.String())
+	case "sellOrderPlaced":
+		common.sellOrder(orderMsg.Task, UserID, orderMsg.Amount)
+		log.Printf("📌 Sell Order Payment changed (User ID: %s)\n", UserID.String())
 	default:
 		log.Printf("⚠️ Unknown task type: %s\n", orderMsg.Task)
 		msg.Nack(false, false)
@@ -142,8 +150,7 @@ func (c *RabbitMQConsumer) Close() {
 	log.Println("🛑 RabbitMQ connection closed.")
 }
 
-
-func (c *RabbitMQConsumer) PublishMessage(exchange, routingKey string, message interface{}) bool{
+func (c *RabbitMQConsumer) PublishMessage(exchange, routingKey string, message interface{}) bool {
 	if c.Ch == nil {
 		logger.Error("❌ RabbitMQ channel not initialized. Cannot publish.")
 		return false

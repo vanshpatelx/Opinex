@@ -1,10 +1,10 @@
 package common
 
-
 import (
+	"fmt"
 	"holding/pkg/cache"
 	"log"
-	"fmt"
+	"math/big"
 )
 
 // Cases: User Add more money => Just add to balance
@@ -122,3 +122,14 @@ func UpdateBalance(action string, userID string, amount float64) error {
 	log.Println("Balance updated successfully:", result)
 	return nil
 }
+
+
+func BuyOrder(Task string, UserID *big.Int, Amount int){
+	UpdateBalance(Task, UserID.String(), float64(Amount))
+}
+
+
+func SellOrder(Task string, UserID *big.Int, Amount int){
+	UpdateBalance(Task, UserID.String(), float64(Amount))
+}
+
