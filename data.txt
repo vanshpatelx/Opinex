@@ -144,7 +144,7 @@ placeOrder
 ✅ sellOrderPlaced
 
 How to store holdings in DB and cache
-Holding:UserID:{UserID}:{EventID}:quantity:locked_quantity:price
+Holding:{UserID}:{EventID} => quantity:locked_quantity:price
 
 In DB
 Holding Primary Key

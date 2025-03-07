@@ -89,8 +89,22 @@ func GetHoldingByID(c *fiber.Ctx) error {
 	}
 
 	// Try fetching from cache
-	cacheKey := "Holding:UserID:" + userID
+	cacheKey := "Holding:" + userID + ":*"
 	if cachedData, err := cache.GetHolding(cacheKey); err == nil {
+		log.Print("check in cache")
+		data = "quantity:locked_quantity:price"
+		// parse it and store in varibales like
+		// and make array like [{
+		// 	"quantity": 1,
+		// 	"locked_quantity": 1,
+		// 	"price": 1
+		// },
+		// {
+		// 	"quantity": 1,
+		// 	"locked_quantity": 1,
+		// 	"price": 1
+		// }]
+		// have to return something like this 
 		if holdings, exists := cachedData["holdings"]; exists {
 			return c.JSON(fiber.Map{"message": "Fetched Holdings successfully", "userID": userID, "holdings": holdings})
 		}
