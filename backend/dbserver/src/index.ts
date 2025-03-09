@@ -16,6 +16,7 @@ app.get('/dbserver/health', (req: Request, res: Response) => {
   res.status(200).json({ success: true, message: "🚀 🚀 Server is running." });
 });
 
+
 async function startConsumers() {
     const queues = ["auth_queue", "event_queue"];
 
