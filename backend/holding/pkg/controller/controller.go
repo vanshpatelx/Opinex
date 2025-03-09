@@ -88,6 +88,7 @@ func GetHoldingByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Unauthorized access"})
 	}
 
+	
 	// Try fetching from cache
 	cacheKey := "Holding:" + userID + ":*"
 	if cachedData, err := cache.GetHolding(cacheKey); err == nil {
